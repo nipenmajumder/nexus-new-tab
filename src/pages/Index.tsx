@@ -8,6 +8,10 @@ import { TodoWidget } from '@/components/widgets/TodoWidget';
 import { PomodoroWidget } from '@/components/widgets/PomodoroWidget';
 import { NotesWidget } from '@/components/widgets/NotesWidget';
 import { QuickLinksWidget } from '@/components/widgets/QuickLinksWidget';
+import { GoogleAppsWidget } from '@/components/widgets/GoogleAppsWidget';
+import { AIToolsWidget } from '@/components/widgets/AIToolsWidget';
+import { MusicWidget } from '@/components/widgets/MusicWidget';
+import { SearchWidget } from '@/components/widgets/SearchWidget';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +32,9 @@ function DashboardContent() {
     { key: 'todos', component: TodoWidget },
     { key: 'pomodoro', component: PomodoroWidget },
     { key: 'notes', component: NotesWidget },
+    { key: 'googleApps', component: GoogleAppsWidget },
+    { key: 'aiTools', component: AIToolsWidget },
+    { key: 'music', component: MusicWidget },
   ];
 
   const sortedWidgets = widgets
@@ -39,6 +46,7 @@ function DashboardContent() {
     });
 
   const showQuickLinks = widgetLayout?.quickLinks?.visible !== false;
+  const showSearch = widgetLayout?.search?.visible !== false;
   const textColorClass = useLightText ? 'text-white' : 'text-gray-900';
   const mutedColorClass = useLightText ? 'text-white/60' : 'text-gray-600';
 
@@ -53,6 +61,13 @@ function DashboardContent() {
           Your personalized new tab experience
         </p>
       </header>
+
+      {/* Search Widget - Prominent placement */}
+      {showSearch && (
+        <div className="max-w-3xl mx-auto mb-8">
+          <SearchWidget />
+        </div>
+      )}
 
       {/* Quick Links - Chrome style centered */}
       {showQuickLinks && (
