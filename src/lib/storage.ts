@@ -21,6 +21,7 @@ export interface StorageData {
   backgroundSettings: BackgroundSettings;
   fontSettings: FontSettings;
   weatherSettings: WeatherSettings;
+  weatherCache: WeatherCache;
   timezones: string[];
   theme: 'light' | 'dark' | 'system';
   clockSettings: ClockSettings;
@@ -93,10 +94,29 @@ export interface FontSettings {
 
 export interface WeatherSettings {
   apiKey: string;
-  location: string;
-  lat?: number;
-  lon?: number;
+  locations: string[];
+  currentLocationIndex: number;
   units: 'metric' | 'imperial';
+}
+
+export interface WeatherCache {
+  [key: string]: {
+    data: {
+      temp: number;
+      description: string;
+      icon: string;
+      humidity: number;
+      windSpeed: number;
+      city: string;
+      forecast?: Array<{
+        date: string;
+        temp: number;
+        icon: string;
+      }>;
+    };
+    timestamp: number;
+    units: 'metric' | 'imperial';
+  };
 }
 
 const defaultData: StorageData = {
@@ -150,9 +170,11 @@ const defaultData: StorageData = {
   },
   weatherSettings: {
     apiKey: '',
-    location: '',
+    locations: [],
+    currentLocationIndex: 0,
     units: 'metric',
   },
+  weatherCache: {},
   timezones: ['local'],
   theme: 'dark',
 };

@@ -2,23 +2,47 @@ import { useEffect, useState } from 'react';
 import { useSettings } from '@/contexts/SettingsContext';
 
 export function Background() {
-  const { backgroundSettings } = useSettings();
+  const { backgroundSettings, setBackgroundSettings } = useSettings();
   const [unsplashUrl, setUnsplashUrl] = useState<string | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     if (backgroundSettings?.type === 'unsplash') {
       // Check if we need a new image (daily refresh)
       const today = new Date().toDateString();
+      
       if (backgroundSettings.lastUnsplashDate !== today || !backgroundSettings.lastUnsplashUrl) {
+        // Fetch new image using Unsplash's random photo API
         const query = backgroundSettings.unsplashQuery || 'nature,landscape';
-        // Use Unsplash source for random images
-        const url = `https://source.unsplash.com/1920x1080/?${encodeURIComponent(query)}&t=${Date.now()}`;
-        setUnsplashUrl(url);
+        const randomSeed = Date.now();
+        // Use Unsplash API endpoint that supports CORS
+        const url = `https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop&q=${randomSeed % 100}`;
+        
+        // For random images based on query, we'll use a simple approach
+        const width = window.innerWidth || 1920;
+        const height = window.innerHeight || 1080;
+        const finalUrl = `https://source.unsplash.com/random/${width}x${height}/?${encodeURIComponent(query)}`;
+        
+        setUnsplashUrl(finalUrl);
+        setImageLoaded(true);
+        
+        // Save the URL and date to settings
+        if (setBackgroundSettings) {
+          setBackgroundSettings({
+            ...backgroundSettings,
+            lastUnsplashUrl: finalUrl,
+            lastUnsplashDate: today,
+          });
+        }
       } else {
+        // Use cached URL
         setUnsplashUrl(backgroundSettings.lastUnsplashUrl);
+        setImageLoaded(true);
       }
+    } else {
+      setImageLoaded(true);
     }
-  }, [backgroundSettings?.type, backgroundSettings?.unsplashQuery]);
+  }, [backgroundSettings?.type, backgroundSettings?.unsplashQuery, backgroundSettings?.lastUnsplashDate]);
 
   const getBackgroundStyle = (): React.CSSProperties => {
     if (!backgroundSettings) {
@@ -46,10 +70,12 @@ export function Background() {
         })`;
         break;
       case 'unsplash':
-        if (unsplashUrl) {
-          style.backgroundImage = `url(${unsplashUrl})`;
+        if (unsplashUrl && imageLoaded) {
+          style.backgroundImage = `url("${unsplashUrl}")`;
+          style.backgroundRepeat = 'no-repeat';
         } else {
-          style.backgroundImage = 'linear-gradient(135deg, #0f0c29, #302b63)';
+          // Fallback while loading or if image fails
+          style.backgroundImage = 'linear-gradient(135deg, #667eea, #764ba2)';
         }
         break;
       default:

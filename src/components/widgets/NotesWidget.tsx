@@ -65,8 +65,8 @@ export function NotesWidget() {
         value={localNotes}
         onChange={handleChange}
         className={cn(
-          'resize-none bg-background/50 border-none focus-visible:ring-1 focus-visible:ring-primary/50 font-body',
-          expanded ? 'min-h-[300px]' : 'min-h-[120px]'
+          'resize-none bg-background/50 border-none focus-visible:ring-1 focus-visible:ring-primary/50 font-body flex-1',
+          expanded ? 'min-h-[300px]' : ''
         )}
       />
 

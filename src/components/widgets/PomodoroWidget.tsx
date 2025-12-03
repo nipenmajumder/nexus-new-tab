@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
 import { useStorage } from '@/hooks/useStorage';
+import { useSettings } from '@/contexts/SettingsContext';
 import { cn } from '@/lib/utils';
 
 type TimerMode = 'work' | 'break' | 'longBreak';
@@ -11,6 +12,7 @@ type TimerMode = 'work' | 'break' | 'longBreak';
 export function PomodoroWidget() {
   const [settings, setSettings] = useStorage('pomodoroSettings');
   const [stats, setStats] = useStorage('pomodoroStats');
+  const { useLightText } = useSettings();
   const [mode, setMode] = useState<TimerMode>('work');
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
@@ -130,8 +132,11 @@ export function PomodoroWidget() {
   const circumference = 2 * Math.PI * 45;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
+  const textColorClass = useLightText ? 'text-white' : 'text-gray-900';
+  const mutedColorClass = useLightText ? 'text-white/70' : 'text-gray-600';
+
   const modeColors = {
-    work: 'text-primary',
+    work: textColorClass,
     break: 'text-green-400',
     longBreak: 'text-blue-400',
   };
@@ -253,7 +258,7 @@ export function PomodoroWidget() {
             }}
           />
         </svg>
-        <div className="absolute text-3xl font-mono font-bold">
+        <div className={cn('absolute text-3xl font-mono font-bold', textColorClass)}>
           {formatTime(timeLeft)}
         </div>
       </div>

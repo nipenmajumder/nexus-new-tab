@@ -137,7 +137,7 @@ export function ClockWidget() {
       </div>
 
       {/* Main local time */}
-      <div className="text-center mb-4">
+      <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
         <div className={cn("text-6xl font-heading font-bold tracking-tight", textColorClass)}>
           {formatTime(time)}
         </div>

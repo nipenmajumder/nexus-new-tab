@@ -19,8 +19,10 @@ export function QuickLinksWidget() {
 
   const getFavicon = (url: string) => {
     try {
-      const domain = new URL(url).hostname;
-      return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+      const urlObj = new URL(url);
+      const domain = urlObj.hostname;
+      // Use DuckDuckGo's favicon service which has better CORS support
+      return `https://icons.duckduckgo.com/ip3/${domain}.ico`;
     } catch {
       return null;
     }
@@ -173,9 +175,20 @@ export function QuickLinksWidget() {
                       <img
                         src={link.favicon}
                         alt={link.title}
-                        className="w-6 h-6"
+                        className="w-6 h-6 object-contain"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
+                          const img = e.target as HTMLImageElement;
+                          // Try Google's favicon service as fallback
+                          if (!img.src.includes('google.com')) {
+                            try {
+                              const domain = new URL(link.url).hostname;
+                              img.src = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
+                            } catch {
+                              img.style.display = 'none';
+                            }
+                          } else {
+                            img.style.display = 'none';
+                          }
                         }}
                       />
                     ) : (

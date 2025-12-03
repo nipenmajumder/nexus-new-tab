@@ -163,6 +163,9 @@
   
   .widget {
     @apply glass-card p-4 transition-all duration-300;
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
   }
   
   .widget:hover {
