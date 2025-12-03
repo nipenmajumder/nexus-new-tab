@@ -1,7 +1,32 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useStorage } from '@/hooks/useStorage';
-import { FontSettings, BackgroundSettings, WidgetLayout } from '@/lib/storage';
+import { FontSettings, BackgroundSettings, WidgetLayout, ClockSettings } from '@/lib/storage';
 import { loadFonts, applyFontSettings, initFonts } from '@/lib/fonts';
+
+// Helper to determine if a color is light or dark
+function getColorLuminance(hex: string): number {
+  const rgb = parseInt(hex.slice(1), 16);
+  const r = (rgb >> 16) & 0xff;
+  const g = (rgb >> 8) & 0xff;
+  const b = (rgb >> 0) & 0xff;
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+}
+
+function shouldUseLight(bgSettings: BackgroundSettings | null): boolean {
+  if (!bgSettings) return true;
+  if (bgSettings.textColor === 'light') return true;
+  if (bgSettings.textColor === 'dark') return false;
+  
+  // Auto detect based on background
+  if (bgSettings.type === 'solid') {
+    return getColorLuminance(bgSettings.solidColor) < 0.5;
+  } else if (bgSettings.type === 'gradient') {
+    const startLum = getColorLuminance(bgSettings.gradientStart);
+    const endLum = getColorLuminance(bgSettings.gradientEnd);
+    return (startLum + endLum) / 2 < 0.5;
+  }
+  return true; // Default to light text for unsplash
+}
 
 interface SettingsContextType {
   theme: 'light' | 'dark' | 'system';
@@ -12,6 +37,9 @@ interface SettingsContextType {
   setBackgroundSettings: (settings: BackgroundSettings) => Promise<void>;
   widgetLayout: WidgetLayout | null;
   setWidgetLayout: (layout: WidgetLayout) => Promise<void>;
+  clockSettings: ClockSettings | null;
+  setClockSettings: (settings: ClockSettings) => Promise<void>;
+  useLightText: boolean;
   isLoading: boolean;
 }
 
@@ -22,7 +50,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [fontSettings, setFontSettingsStorage, fontLoading] = useStorage('fontSettings');
   const [backgroundSettings, setBackgroundSettingsStorage, bgLoading] = useStorage('backgroundSettings');
   const [widgetLayout, setWidgetLayoutStorage, layoutLoading] = useStorage('widgetLayout');
+  const [clockSettings, setClockSettingsStorage, clockLoading] = useStorage('clockSettings');
   const [fontsInitialized, setFontsInitialized] = useState(false);
+  
+  const useLightText = shouldUseLight(backgroundSettings);
 
   // Initialize fonts
   useEffect(() => {
@@ -68,7 +99,11 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     await setWidgetLayoutStorage(layout);
   };
 
-  const isLoading = fontLoading || bgLoading || layoutLoading || !fontsInitialized;
+  const setClockSettings = async (settings: ClockSettings) => {
+    await setClockSettingsStorage(settings);
+  };
+
+  const isLoading = fontLoading || bgLoading || layoutLoading || clockLoading || !fontsInitialized;
 
   return (
     <SettingsContext.Provider
@@ -81,6 +116,9 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         setBackgroundSettings,
         widgetLayout,
         setWidgetLayout,
+        clockSettings,
+        setClockSettings,
+        useLightText,
         isLoading,
       }}
     >

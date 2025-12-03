@@ -23,6 +23,7 @@ export interface StorageData {
   weatherSettings: WeatherSettings;
   timezones: string[];
   theme: 'light' | 'dark' | 'system';
+  clockSettings: ClockSettings;
 }
 
 export interface Todo {
@@ -75,6 +76,11 @@ export interface BackgroundSettings {
   opacity: number;
   lastUnsplashUrl?: string;
   lastUnsplashDate?: string;
+  textColor: 'auto' | 'light' | 'dark';
+}
+
+export interface ClockSettings {
+  use24Hour: boolean;
 }
 
 export interface FontSettings {
@@ -130,6 +136,10 @@ const defaultData: StorageData = {
     gradientAngle: 135,
     blur: 0,
     opacity: 100,
+    textColor: 'auto',
+  },
+  clockSettings: {
+    use24Hour: true,
   },
   fontSettings: {
     headingFont: 'Space Grotesk',

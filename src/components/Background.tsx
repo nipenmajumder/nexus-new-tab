@@ -23,41 +23,40 @@ export function Background() {
   const getBackgroundStyle = (): React.CSSProperties => {
     if (!backgroundSettings) {
       return {
-        background: 'linear-gradient(135deg, #0f0c29, #302b63)',
+        backgroundImage: 'linear-gradient(135deg, #0f0c29, #302b63)',
       };
     }
 
-    const { type, solidColor, gradientStart, gradientEnd, gradientAngle, blur, opacity } =
+    const { type, solidColor, gradientStart, gradientEnd, gradientAngle, blur } =
       backgroundSettings;
 
-    let background = '';
+    const style: React.CSSProperties = {
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      filter: blur ? `blur(${blur}px)` : undefined,
+    };
 
     switch (type) {
       case 'solid':
-        background = solidColor || '#1a1a2e';
+        style.backgroundColor = solidColor || '#1a1a2e';
         break;
       case 'gradient':
-        background = `linear-gradient(${gradientAngle || 135}deg, ${gradientStart || '#0f0c29'}, ${
+        style.backgroundImage = `linear-gradient(${gradientAngle || 135}deg, ${gradientStart || '#0f0c29'}, ${
           gradientEnd || '#302b63'
         })`;
         break;
       case 'unsplash':
         if (unsplashUrl) {
-          background = `url(${unsplashUrl})`;
+          style.backgroundImage = `url(${unsplashUrl})`;
         } else {
-          background = 'linear-gradient(135deg, #0f0c29, #302b63)';
+          style.backgroundImage = 'linear-gradient(135deg, #0f0c29, #302b63)';
         }
         break;
       default:
-        background = 'linear-gradient(135deg, #0f0c29, #302b63)';
+        style.backgroundImage = 'linear-gradient(135deg, #0f0c29, #302b63)';
     }
 
-    return {
-      background,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      filter: blur ? `blur(${blur}px)` : undefined,
-    };
+    return style;
   };
 
   const overlayOpacity = backgroundSettings?.opacity ? (100 - backgroundSettings.opacity) / 100 : 0;

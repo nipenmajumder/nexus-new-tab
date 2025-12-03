@@ -236,6 +236,32 @@ export function SettingsPanel() {
                 step={5}
               />
             </div>
+
+            <div>
+              <Label className="text-sm font-medium mb-3 block">Text Color</Label>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { value: 'auto', label: 'Auto' },
+                  { value: 'light', label: 'Light' },
+                  { value: 'dark', label: 'Dark' },
+                ].map(({ value, label }) => (
+                  <button
+                    key={value}
+                    onClick={() => updateBackgroundSetting('textColor', value)}
+                    className={cn(
+                      'p-3 rounded-xl border border-border/50 capitalize text-sm',
+                      'hover:border-primary/50 transition-all',
+                      backgroundSettings?.textColor === value && 'bg-primary/10 border-primary'
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                Auto adjusts based on background brightness
+              </p>
+            </div>
           </TabsContent>
 
           {/* Fonts Tab */}

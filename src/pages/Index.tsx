@@ -9,9 +9,10 @@ import { PomodoroWidget } from '@/components/widgets/PomodoroWidget';
 import { NotesWidget } from '@/components/widgets/NotesWidget';
 import { QuickLinksWidget } from '@/components/widgets/QuickLinksWidget';
 import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 function DashboardContent() {
-  const { widgetLayout, isLoading } = useSettings();
+  const { widgetLayout, isLoading, useLightText } = useSettings();
 
   if (isLoading) {
     return (
@@ -27,7 +28,6 @@ function DashboardContent() {
     { key: 'todos', component: TodoWidget },
     { key: 'pomodoro', component: PomodoroWidget },
     { key: 'notes', component: NotesWidget },
-    { key: 'quickLinks', component: QuickLinksWidget },
   ];
 
   const sortedWidgets = widgets
@@ -38,13 +38,28 @@ function DashboardContent() {
       return orderA - orderB;
     });
 
+  const showQuickLinks = widgetLayout?.quickLinks?.visible !== false;
+  const textColorClass = useLightText ? 'text-white' : 'text-gray-900';
+  const mutedColorClass = useLightText ? 'text-white/60' : 'text-gray-600';
+
   return (
     <div className="min-h-screen p-6 md:p-8 lg:p-12">
       {/* Header */}
       <header className="mb-8 text-center">
-        <h1 className="text-2xl font-heading font-bold gradient-text mb-1">Nexus Tab</h1>
-        <p className="text-sm text-muted-foreground">Your personalized new tab experience</p>
+        <h1 className={cn("text-2xl font-heading font-bold mb-1", textColorClass)}>
+          Nexus Tab
+        </h1>
+        <p className={cn("text-sm", mutedColorClass)}>
+          Your personalized new tab experience
+        </p>
       </header>
+
+      {/* Quick Links - Chrome style centered */}
+      {showQuickLinks && (
+        <div className="max-w-2xl mx-auto mb-12">
+          <QuickLinksWidget />
+        </div>
+      )}
 
       {/* Widget Grid */}
       <main className="max-w-7xl mx-auto">
@@ -58,9 +73,15 @@ function DashboardContent() {
       </main>
 
       {/* Footer */}
-      <footer className="fixed bottom-6 left-6 text-xs text-muted-foreground/50">
-        <kbd className="px-1.5 py-0.5 rounded bg-muted/30 mr-1">Ctrl</kbd>+
-        <kbd className="px-1.5 py-0.5 rounded bg-muted/30 mx-1">K</kbd>
+      <footer className={cn("fixed bottom-6 left-6 text-xs", mutedColorClass)}>
+        <kbd className={cn(
+          "px-1.5 py-0.5 rounded mr-1",
+          useLightText ? "bg-white/20" : "bg-black/10"
+        )}>Ctrl</kbd>+
+        <kbd className={cn(
+          "px-1.5 py-0.5 rounded mx-1",
+          useLightText ? "bg-white/20" : "bg-black/10"
+        )}>K</kbd>
         Search
       </footer>
     </div>
