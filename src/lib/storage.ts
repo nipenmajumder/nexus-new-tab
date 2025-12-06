@@ -264,6 +264,11 @@ const defaultData: StorageData = {
     },
   ],
   defaultMusicService: 'spotify',
+  quoteCache: {
+    quote: '',
+    author: '',
+    fetchedAt: 0,
+  },
   dragEnabled: true,
 };
 
@@ -329,9 +334,9 @@ export async function getAllStorageData(): Promise<StorageData> {
     const stored = localStorage.getItem(`nexus_${key}`);
     if (stored) {
       try {
-        data[key] = JSON.parse(stored);
+        (data as Record<string, unknown>)[key] = JSON.parse(stored);
       } catch {
-        data[key] = defaultData[key] as any;
+        (data as Record<string, unknown>)[key] = defaultData[key];
       }
     }
   }

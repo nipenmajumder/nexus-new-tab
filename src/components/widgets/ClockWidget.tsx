@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
 import { Clock, Plus, X, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -88,15 +89,15 @@ export function ClockWidget() {
     }
   };
 
-  const textColorClass = useLightText ? 'text-white' : 'text-gray-900';
-  const mutedColorClass = useLightText ? 'text-white/70' : 'text-gray-600';
+  const textColorClass = useLightText ? 'text-white' : 'text-foreground';
+  const mutedColorClass = useLightText ? 'text-white/70' : 'text-muted-foreground';
 
   return (
-    <div className="widget animate-fade-in">
-      <div className="flex items-center justify-between mb-4">
-        <div className={cn("flex items-center gap-2", mutedColorClass)}>
-          <Clock className="w-4 h-4" />
-          <span className="text-sm font-medium">Clock</span>
+    <div className="widget">
+      <div className="widget-header">
+        <div className="widget-header-left">
+          <Clock className="widget-header-icon" />
+          <span className="widget-title">Clock</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5">
@@ -109,13 +110,13 @@ export function ClockWidget() {
           </div>
           <Popover open={showAddPopover} onOpenChange={setShowAddPopover}>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
+              <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-white/10">
                 <Plus className="w-4 h-4" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-56 glass" align="end">
               <div className="space-y-2">
-                <p className="text-sm font-medium mb-2">Add Timezone</p>
+                <p className="text-sm font-medium mb-3">Add Timezone</p>
                 {popularTimezones
                   .filter((tz) => !timezones?.includes(tz.zone))
                   .map((tz) => (
@@ -123,7 +124,7 @@ export function ClockWidget() {
                       key={tz.zone}
                       variant="ghost"
                       size="sm"
-                      className="w-full justify-start text-sm"
+                      className="w-full justify-start text-sm hover:bg-white/10"
                       onClick={() => addTimezone(tz)}
                     >
                       <Globe className="w-3 h-3 mr-2" />
@@ -138,48 +139,74 @@ export function ClockWidget() {
 
       {/* Main local time */}
       <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
-        <div className={cn("text-6xl font-heading font-bold tracking-tight", textColorClass)}>
+        <motion.div 
+          className={cn("text-6xl font-heading font-bold tracking-tight", textColorClass)}
+          key={formatTime(time)}
+          initial={{ opacity: 0.8, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.2 }}
+        >
           {formatTime(time)}
-        </div>
+        </motion.div>
         {!use24Hour && (
-          <div className={cn("text-lg font-medium", mutedColorClass)}>
+          <div className={cn("text-lg font-medium mt-1", mutedColorClass)}>
             {format(time, 'a')}
           </div>
         )}
-        <div className={cn("text-2xl font-light", mutedColorClass)}>
-          {format(time, 'ss')}
-        </div>
-        <div className={cn("text-sm mt-2", mutedColorClass)}>
+        <motion.div 
+          className={cn("text-2xl font-light tabular-nums", mutedColorClass)}
+          key={format(time, 'ss')}
+          initial={{ opacity: 0.5 }}
+          animate={{ opacity: 0.7 }}
+        >
+          :{format(time, 'ss')}
+        </motion.div>
+        <div className={cn("text-sm mt-3 tracking-wide", mutedColorClass)}>
           {format(time, 'EEEE, MMMM d, yyyy')}
         </div>
       </div>
 
       {/* Additional timezones */}
-      {timezones && timezones.filter((tz) => tz !== 'local').length > 0 && (
-        <div className="border-t border-white/20 pt-3 mt-3 space-y-2">
-          {timezones
-            .filter((tz) => tz !== 'local')
-            .map((zone) => (
-              <div
-                key={zone}
-                className="flex items-center justify-between text-sm"
-              >
-                <span className={mutedColorClass}>{getTimezoneLabel(zone)}</span>
-                <div className="flex items-center gap-2">
-                  <span className={cn("font-mono", textColorClass)}>{getTimeInTimezone(zone)}</span>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-5 w-5 opacity-50 hover:opacity-100"
-                    onClick={() => removeTimezone(zone)}
-                  >
-                    <X className="w-3 h-3" />
-                  </Button>
-                </div>
-              </div>
-            ))}
-        </div>
-      )}
+      <AnimatePresence>
+        {timezones && timezones.filter((tz) => tz !== 'local').length > 0 && (
+          <motion.div 
+            className={cn(
+              "border-t pt-4 mt-4 space-y-2",
+              useLightText ? "border-white/20" : "border-border"
+            )}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+          >
+            {timezones
+              .filter((tz) => tz !== 'local')
+              .map((zone) => (
+                <motion.div
+                  key={zone}
+                  className="flex items-center justify-between text-sm group"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                >
+                  <span className={mutedColorClass}>{getTimezoneLabel(zone)}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={cn("font-mono tabular-nums", textColorClass)}>
+                      {getTimeInTimezone(zone)}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={() => removeTimezone(zone)}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                </motion.div>
+              ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

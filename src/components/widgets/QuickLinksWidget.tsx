@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Trash2, Edit2, X, Check, ExternalLink } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +22,6 @@ export function QuickLinksWidget() {
     try {
       const urlObj = new URL(url);
       const domain = urlObj.hostname;
-      // Use DuckDuckGo's favicon service which has better CORS support
       return `https://icons.duckduckgo.com/ip3/${domain}.ico`;
     } catch {
       return null;
@@ -99,187 +99,234 @@ export function QuickLinksWidget() {
     setDraggedId(null);
   };
 
-  const textColorClass = useLightText ? 'text-white' : 'text-gray-900';
-  const mutedColorClass = useLightText ? 'text-white/70' : 'text-gray-600';
+  const textColorClass = useLightText ? 'text-white' : 'text-foreground';
+  const mutedColorClass = useLightText ? 'text-white/70' : 'text-muted-foreground';
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 },
+    },
+  } as const;
+
+  const itemVariants = {
+    hidden: { opacity: 0, scale: 0.8, y: 10 },
+    visible: { 
+      opacity: 1, 
+      scale: 1, 
+      y: 0,
+      transition: { type: 'spring' as const, stiffness: 200, damping: 15 }
+    },
+  };
 
   return (
-    <div className="animate-fade-in">
-      {/* Circular shortcuts grid - Chrome style */}
-      <div className="flex flex-wrap justify-center gap-6">
-        {links?.sort((a, b) => a.order - b.order).map((link) => (
-          <div
-            key={link.id}
-            draggable
-            onDragStart={(e) => handleDragStart(e, link.id)}
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, link.id)}
-            className={cn(
-              'group relative flex flex-col items-center cursor-move transition-all',
-              draggedId === link.id && 'opacity-50'
-            )}
-          >
-            {editingId === link.id ? (
-              <div className="w-32 space-y-2 p-3 rounded-xl glass">
-                <Input
-                  defaultValue={link.title}
-                  className="h-7 text-xs bg-background/50"
-                  id={`title-${link.id}`}
-                />
-                <Input
-                  defaultValue={link.url}
-                  className="h-7 text-xs bg-background/50"
-                  id={`url-${link.id}`}
-                />
-                <div className="flex gap-1 justify-center">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-6 w-6"
-                    onClick={() => {
-                      const titleInput = document.getElementById(`title-${link.id}`) as HTMLInputElement;
-                      const urlInput = document.getElementById(`url-${link.id}`) as HTMLInputElement;
-                      if (titleInput && urlInput) {
-                        updateLink(link.id, titleInput.value, urlInput.value);
-                      }
-                    }}
-                  >
-                    <Check className="w-3 h-3 text-green-400" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-6 w-6"
-                    onClick={() => setEditingId(null)}
-                  >
-                    <X className="w-3 h-3" />
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex flex-col items-center group/link"
-                  onClick={(e) => e.stopPropagation()}
+    <motion.div 
+      className="w-full"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <div className="flex flex-wrap justify-center gap-8">
+        <AnimatePresence mode="popLayout">
+          {links?.sort((a, b) => a.order - b.order).map((link) => (
+            <motion.div
+              key={link.id}
+              variants={itemVariants}
+              layout
+              draggable
+              onDragStart={(e) => handleDragStart(e as unknown as React.DragEvent, link.id)}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e as unknown as React.DragEvent, link.id)}
+              className={cn(
+                'group relative flex flex-col items-center cursor-move',
+                draggedId === link.id && 'opacity-50'
+              )}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {editingId === link.id ? (
+                <motion.div 
+                  className="w-36 space-y-2 p-4 rounded-xl glass"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
                 >
-                  <div className={cn(
-                    "w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all",
-                    "group-hover/link:scale-110 shadow-lg",
-                    useLightText 
-                      ? "bg-white/20 backdrop-blur-sm border border-white/30" 
-                      : "bg-black/10 backdrop-blur-sm border border-black/20"
-                  )}>
-                    {link.favicon ? (
-                      <img
-                        src={link.favicon}
-                        alt={link.title}
-                        className="w-6 h-6 object-contain"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = `https://www.google.com/s2/favicons?domain=${link.url}&sz=64`;
-                        }}
-                      />
-                    ) : (
-                      <ExternalLink className={cn("w-5 h-5", mutedColorClass)} />
-                    )}
+                  <Input
+                    defaultValue={link.title}
+                    className="h-8 text-xs bg-background/50"
+                    id={`title-${link.id}`}
+                    placeholder="Title"
+                  />
+                  <Input
+                    defaultValue={link.url}
+                    className="h-8 text-xs bg-background/50"
+                    id={`url-${link.id}`}
+                    placeholder="URL"
+                  />
+                  <div className="flex gap-1 justify-center pt-1">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7 hover:bg-green-500/20"
+                      onClick={() => {
+                        const titleInput = document.getElementById(`title-${link.id}`) as HTMLInputElement;
+                        const urlInput = document.getElementById(`url-${link.id}`) as HTMLInputElement;
+                        if (titleInput && urlInput) {
+                          updateLink(link.id, titleInput.value, urlInput.value);
+                        }
+                      }}
+                    >
+                      <Check className="w-3.5 h-3.5 text-green-400" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-7 w-7"
+                      onClick={() => setEditingId(null)}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </Button>
                   </div>
-                  <span className={cn(
-                    "text-xs text-center truncate max-w-[80px] font-medium drop-shadow-sm",
-                    textColorClass
-                  )}>
-                    {link.title}
-                  </span>
-                </a>
-                
-                {/* Edit/Delete buttons */}
-                <div className="absolute -top-1 -right-1 opacity-0 group-hover:opacity-100 transition-opacity flex gap-0.5">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className={cn(
-                      "h-5 w-5 rounded-full",
-                      useLightText ? "bg-white/30 hover:bg-white/50" : "bg-black/20 hover:bg-black/40"
-                    )}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setEditingId(link.id);
-                    }}
+                </motion.div>
+              ) : (
+                <>
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex flex-col items-center group/link"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    <Edit2 className="w-2.5 h-2.5" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className={cn(
-                      "h-5 w-5 rounded-full",
-                      useLightText ? "bg-white/30 hover:bg-red-500/50" : "bg-black/20 hover:bg-red-500/50"
-                    )}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      deleteLink(link.id);
-                    }}
-                  >
-                    <Trash2 className="w-2.5 h-2.5 text-destructive" />
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        ))}
+                    <motion.div 
+                      className={cn(
+                        "w-14 h-14 rounded-full flex items-center justify-center mb-2",
+                        "shadow-lg transition-shadow duration-300",
+                        useLightText 
+                          ? "bg-white/20 backdrop-blur-md border border-white/30 hover:shadow-xl hover:bg-white/30" 
+                          : "bg-background/60 backdrop-blur-md border border-border/50 hover:shadow-xl hover:bg-background/80"
+                      )}
+                      whileHover={{ boxShadow: useLightText ? '0 0 30px rgba(255,255,255,0.3)' : '0 0 30px rgba(0,0,0,0.2)' }}
+                    >
+                      {link.favicon ? (
+                        <img
+                          src={link.favicon}
+                          alt={link.title}
+                          className="w-7 h-7 object-contain"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = `https://www.google.com/s2/favicons?domain=${link.url}&sz=64`;
+                          }}
+                        />
+                      ) : (
+                        <ExternalLink className={cn("w-5 h-5", mutedColorClass)} />
+                      )}
+                    </motion.div>
+                    <span className={cn(
+                      "text-xs text-center truncate max-w-[80px] font-medium",
+                      textColorClass
+                    )}>
+                      {link.title}
+                    </span>
+                  </a>
+                  
+                  {/* Edit/Delete buttons */}
+                  <div className="absolute -top-2 -right-2 opacity-0 group-hover:opacity-100 transition-all duration-200 flex gap-1">
+                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className={cn(
+                          "h-6 w-6 rounded-full shadow-md",
+                          useLightText ? "bg-white/40 hover:bg-white/60" : "bg-background/80 hover:bg-background"
+                        )}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setEditingId(link.id);
+                        }}
+                      >
+                        <Edit2 className="w-3 h-3" />
+                      </Button>
+                    </motion.div>
+                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className={cn(
+                          "h-6 w-6 rounded-full shadow-md",
+                          useLightText ? "bg-white/40 hover:bg-red-500/60" : "bg-background/80 hover:bg-red-500/20"
+                        )}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          deleteLink(link.id);
+                        }}
+                      >
+                        <Trash2 className="w-3 h-3 text-destructive" />
+                      </Button>
+                    </motion.div>
+                  </div>
+                </>
+              )}
+            </motion.div>
+          ))}
+        </AnimatePresence>
 
         {/* Add shortcut button */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <button className="flex flex-col items-center group">
+            <motion.button 
+              className="flex flex-col items-center group"
+              variants={itemVariants}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <div className={cn(
-                "w-12 h-12 rounded-full flex items-center justify-center mb-2 transition-all",
-                "group-hover:scale-110",
+                "w-14 h-14 rounded-full flex items-center justify-center mb-2",
+                "transition-all duration-300 border-2 border-dashed",
                 useLightText 
-                  ? "bg-white/20 backdrop-blur-sm border border-white/30 hover:bg-white/30" 
-                  : "bg-black/10 backdrop-blur-sm border border-black/20 hover:bg-black/20"
+                  ? "border-white/40 hover:border-white/60 hover:bg-white/10" 
+                  : "border-muted-foreground/40 hover:border-muted-foreground/60 hover:bg-muted/30"
               )}>
                 <Plus className={cn("w-5 h-5", mutedColorClass)} />
               </div>
-              <span className={cn(
-                "text-xs font-medium drop-shadow-sm",
-                mutedColorClass
-              )}>
+              <span className={cn("text-xs font-medium", mutedColorClass)}>
                 Add shortcut
               </span>
-            </button>
+            </motion.button>
           </DialogTrigger>
-          <DialogContent className="glass">
+          <DialogContent className="glass sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Add Quick Link</DialogTitle>
+              <DialogTitle className="text-lg">Add Quick Link</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 pt-2">
               <div>
-                <label className="text-sm font-medium mb-1 block">Title</label>
+                <label className="text-sm font-medium mb-2 block">Title</label>
                 <Input
-                  placeholder="Google"
+                  placeholder="e.g. Google"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   className="bg-background/50"
                 />
               </div>
               <div>
-                <label className="text-sm font-medium mb-1 block">URL</label>
+                <label className="text-sm font-medium mb-2 block">URL</label>
                 <Input
-                  placeholder="https://google.com"
+                  placeholder="e.g. https://google.com"
                   value={newUrl}
                   onChange={(e) => setNewUrl(e.target.value)}
                   className="bg-background/50"
                 />
               </div>
-              <Button onClick={addLink} className="w-full" disabled={!newTitle.trim() || !newUrl.trim()}>
+              <Button 
+                onClick={addLink} 
+                className="w-full btn-premium text-primary-foreground"
+                disabled={!newTitle.trim() || !newUrl.trim()}
+              >
                 Add Link
               </Button>
             </div>
           </DialogContent>
         </Dialog>
       </div>
-    </div>
+    </motion.div>
   );
 }

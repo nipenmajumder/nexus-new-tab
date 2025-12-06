@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { Timer, Play, Pause, RotateCcw, Settings, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -17,16 +18,13 @@ export function PomodoroWidget() {
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [sessionsCompleted, setSessionsCompleted] = useState(0);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Initialize time when settings load
   useEffect(() => {
     if (settings) {
       setTimeLeft(settings.workDuration * 60);
     }
   }, [settings]);
 
-  // Timer logic
   useEffect(() => {
     if (!isRunning || !settings) return;
 
@@ -46,7 +44,6 @@ export function PomodoroWidget() {
   const handleTimerComplete = async () => {
     setIsRunning(false);
     
-    // Play sound
     if (settings?.soundEnabled) {
       playNotificationSound();
     }
@@ -55,7 +52,6 @@ export function PomodoroWidget() {
       const newSessions = sessionsCompleted + 1;
       setSessionsCompleted(newSessions);
       
-      // Update stats
       if (stats) {
         const today = new Date().toDateString();
         await setStats({
@@ -65,7 +61,6 @@ export function PomodoroWidget() {
         });
       }
 
-      // Determine next break type
       if (settings && newSessions % settings.sessionsUntilLongBreak === 0) {
         setMode('longBreak');
         setTimeLeft(settings.longBreakDuration * 60);
@@ -80,7 +75,6 @@ export function PomodoroWidget() {
   };
 
   const playNotificationSound = () => {
-    // Create a simple beep using Web Audio API
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -129,16 +123,16 @@ export function PomodoroWidget() {
   };
 
   const progress = ((getDuration() - timeLeft) / getDuration()) * 100;
-  const circumference = 2 * Math.PI * 45;
+  const circumference = 2 * Math.PI * 50;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
-  const textColorClass = useLightText ? 'text-white' : 'text-gray-900';
-  const mutedColorClass = useLightText ? 'text-white/70' : 'text-gray-600';
+  const textColorClass = useLightText ? 'text-white' : 'text-foreground';
+  const mutedColorClass = useLightText ? 'text-white/70' : 'text-muted-foreground';
 
-  const modeColors = {
-    work: textColorClass,
-    break: 'text-green-400',
-    longBreak: 'text-blue-400',
+  const modeConfig = {
+    work: { color: 'text-primary', bg: 'bg-primary/20', stroke: 'stroke-primary' },
+    break: { color: 'text-green-400', bg: 'bg-green-500/20', stroke: 'stroke-green-400' },
+    longBreak: { color: 'text-blue-400', bg: 'bg-blue-500/20', stroke: 'stroke-blue-400' },
   };
 
   const modeLabels = {
@@ -148,14 +142,14 @@ export function PomodoroWidget() {
   };
 
   return (
-    <div className="widget animate-fade-in">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Timer className="w-4 h-4" />
-          <span className="text-sm font-medium">Pomodoro</span>
+    <div className="widget">
+      <div className="widget-header">
+        <div className="widget-header-left">
+          <Timer className="widget-header-icon" />
+          <span className="widget-title">Pomodoro</span>
         </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={toggleSound}>
+          <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-white/10" onClick={toggleSound}>
             {settings?.soundEnabled ? (
               <Volume2 className="w-4 h-4" />
             ) : (
@@ -164,14 +158,14 @@ export function PomodoroWidget() {
           </Button>
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7">
+              <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-white/10">
                 <Settings className="w-4 h-4" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-64 glass" align="end">
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div>
-                  <label className="text-sm font-medium">Work Duration: {settings?.workDuration || 25}m</label>
+                  <label className="text-sm font-medium mb-2 block">Work: {settings?.workDuration || 25}m</label>
                   <Slider
                     value={[settings?.workDuration || 25]}
                     onValueChange={async ([value]) => {
@@ -185,11 +179,10 @@ export function PomodoroWidget() {
                     min={5}
                     max={60}
                     step={5}
-                    className="mt-2"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Break Duration: {settings?.breakDuration || 5}m</label>
+                  <label className="text-sm font-medium mb-2 block">Break: {settings?.breakDuration || 5}m</label>
                   <Slider
                     value={[settings?.breakDuration || 5]}
                     onValueChange={async ([value]) => {
@@ -200,11 +193,10 @@ export function PomodoroWidget() {
                     min={1}
                     max={15}
                     step={1}
-                    className="mt-2"
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium">Long Break: {settings?.longBreakDuration || 15}m</label>
+                  <label className="text-sm font-medium mb-2 block">Long Break: {settings?.longBreakDuration || 15}m</label>
                   <Slider
                     value={[settings?.longBreakDuration || 15]}
                     onValueChange={async ([value]) => {
@@ -215,7 +207,6 @@ export function PomodoroWidget() {
                     min={10}
                     max={30}
                     step={5}
-                    className="mt-2"
                   />
                 </div>
               </div>
@@ -225,72 +216,96 @@ export function PomodoroWidget() {
       </div>
 
       {/* Mode indicator */}
-      <div className="text-center mb-2">
-        <span className={cn('text-sm font-medium', modeColors[mode])}>
+      <motion.div 
+        className="text-center mb-3"
+        key={mode}
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <span className={cn(
+          'text-sm font-medium px-3 py-1 rounded-full',
+          modeConfig[mode].bg,
+          modeConfig[mode].color
+        )}>
           {modeLabels[mode]}
         </span>
-      </div>
+      </motion.div>
 
       {/* Timer display with progress ring */}
-      <div className="relative flex items-center justify-center mb-4">
-        <svg className="w-32 h-32 -rotate-90">
+      <div className="relative flex items-center justify-center mb-5 flex-1">
+        <svg className="w-36 h-36 -rotate-90">
           <circle
-            cx="64"
-            cy="64"
-            r="45"
+            cx="72"
+            cy="72"
+            r="50"
             stroke="currentColor"
             strokeWidth="6"
             fill="none"
-            className="text-muted/30"
+            className="text-muted/20"
           />
-          <circle
-            cx="64"
-            cy="64"
-            r="45"
-            stroke="currentColor"
+          <motion.circle
+            cx="72"
+            cy="72"
+            r="50"
             strokeWidth="6"
             fill="none"
             strokeLinecap="round"
-            className={cn('transition-all duration-1000', modeColors[mode])}
+            className={cn('transition-colors duration-300', modeConfig[mode].stroke)}
             style={{
               strokeDasharray: circumference,
               strokeDashoffset,
             }}
+            initial={false}
+            animate={{ strokeDashoffset }}
+            transition={{ duration: 0.5, ease: 'linear' }}
           />
         </svg>
-        <div className={cn('absolute text-3xl font-mono font-bold', textColorClass)}>
+        <motion.div 
+          className={cn('absolute text-4xl font-mono font-bold tabular-nums', textColorClass)}
+          key={formatTime(timeLeft)}
+          initial={{ scale: 0.95, opacity: 0.8 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.2 }}
+        >
           {formatTime(timeLeft)}
-        </div>
+        </motion.div>
       </div>
 
       {/* Controls */}
-      <div className="flex justify-center gap-2 mb-3">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={resetTimer}
-          className="h-10 w-10"
-        >
-          <RotateCcw className="w-4 h-4" />
-        </Button>
-        <Button
-          size="icon"
-          onClick={toggleTimer}
-          className={cn('h-10 w-10', isRunning && 'glow')}
-        >
-          {isRunning ? (
-            <Pause className="w-4 h-4" />
-          ) : (
-            <Play className="w-4 h-4 ml-0.5" />
-          )}
-        </Button>
+      <div className="flex justify-center gap-3 mb-4">
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={resetTimer}
+            className="h-11 w-11 rounded-full"
+          >
+            <RotateCcw className="w-4 h-4" />
+          </Button>
+        </motion.div>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            size="icon"
+            onClick={toggleTimer}
+            className={cn(
+              'h-11 w-11 rounded-full transition-shadow',
+              isRunning && 'animate-glow-pulse'
+            )}
+          >
+            {isRunning ? (
+              <Pause className="w-5 h-5" />
+            ) : (
+              <Play className="w-5 h-5 ml-0.5" />
+            )}
+          </Button>
+        </motion.div>
       </div>
 
       {/* Stats */}
-      <div className="text-center text-sm text-muted-foreground">
-        <span>Sessions today: {stats?.todaySessions || 0}</span>
-        <span className="mx-2">•</span>
-        <span>Total: {stats?.totalSessions || 0}</span>
+      <div className={cn("text-center text-sm", mutedColorClass)}>
+        <span>Today: <strong className={textColorClass}>{stats?.todaySessions || 0}</strong></span>
+        <span className="mx-3 opacity-50">•</span>
+        <span>Total: <strong className={textColorClass}>{stats?.totalSessions || 0}</strong></span>
       </div>
     </div>
   );

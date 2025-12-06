@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { CheckCircle2, Circle, Plus, Trash2, ListTodo, Tag } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, Circle, Plus, Trash2, ListTodo } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -9,10 +10,10 @@ import { cn } from '@/lib/utils';
 
 const categories = ['work', 'personal', 'urgent', 'later'];
 const categoryColors: Record<string, string> = {
-  work: 'bg-blue-500/20 text-blue-400',
-  personal: 'bg-green-500/20 text-green-400',
-  urgent: 'bg-red-500/20 text-red-400',
-  later: 'bg-yellow-500/20 text-yellow-400',
+  work: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+  personal: 'bg-green-500/20 text-green-400 border-green-500/30',
+  urgent: 'bg-red-500/20 text-red-400 border-red-500/30',
+  later: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
 };
 
 export function TodoWidget() {
@@ -60,14 +61,14 @@ export function TodoWidget() {
   const totalCount = todos?.length || 0;
 
   return (
-    <div className="widget animate-fade-in">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <ListTodo className="w-4 h-4" />
-          <span className="text-sm font-medium">Todos</span>
+    <div className="widget">
+      <div className="widget-header">
+        <div className="widget-header-left">
+          <ListTodo className="widget-header-icon" />
+          <span className="widget-title">Todos</span>
         </div>
         {totalCount > 0 && (
-          <Badge variant="secondary" className="text-xs">
+          <Badge variant="secondary" className="text-xs font-mono">
             {completedCount}/{totalCount}
           </Badge>
         )}
@@ -80,85 +81,112 @@ export function TodoWidget() {
           value={newTodo}
           onChange={(e) => setNewTodo(e.target.value)}
           onKeyPress={handleKeyPress}
-          className="bg-background/50 text-sm"
+          className="bg-background/50 text-sm border-0 focus-visible:ring-1 focus-visible:ring-primary/50"
         />
-        <Button size="icon" onClick={addTodo} disabled={!newTodo.trim()}>
-          <Plus className="w-4 h-4" />
-        </Button>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button size="icon" onClick={addTodo} disabled={!newTodo.trim()} className="shrink-0">
+            <Plus className="w-4 h-4" />
+          </Button>
+        </motion.div>
       </div>
 
       {/* Category pills */}
-      <div className="flex flex-wrap gap-1 mb-3">
+      <div className="flex flex-wrap gap-1.5 mb-4">
         {categories.map((cat) => (
-          <button
+          <motion.button
             key={cat}
             onClick={() => setSelectedCategory(selectedCategory === cat ? undefined : cat)}
             className={cn(
-              'px-2 py-0.5 rounded-full text-xs transition-all',
+              'px-2.5 py-1 rounded-full text-xs transition-all border capitalize',
               selectedCategory === cat
                 ? categoryColors[cat]
-                : 'bg-muted/50 text-muted-foreground hover:bg-muted'
+                : 'bg-muted/50 text-muted-foreground border-transparent hover:bg-muted'
             )}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
             {cat}
-          </button>
+          </motion.button>
         ))}
       </div>
 
       {/* Todo list */}
-      <div className="space-y-2 max-h-64 overflow-y-auto">
-        {todos?.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">
-            No tasks yet. Add one above!
-          </p>
-        ) : (
-          todos?.map((todo) => (
-            <div
-              key={todo.id}
-              className={cn(
-                'group flex items-center gap-2 p-2 rounded-lg transition-all',
-                'hover:bg-background/50',
-                todo.completed && 'opacity-60'
-              )}
+      <div className="space-y-2 flex-1 overflow-y-auto max-h-52 pr-1">
+        <AnimatePresence mode="popLayout">
+          {todos?.length === 0 ? (
+            <motion.p 
+              className="text-sm text-muted-foreground text-center py-8"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
             >
-              <button onClick={() => toggleTodo(todo.id)} className="flex-shrink-0">
-                {todo.completed ? (
-                  <CheckCircle2 className="w-5 h-5 text-primary" />
-                ) : (
-                  <Circle className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" />
+              No tasks yet. Add one above!
+            </motion.p>
+          ) : (
+            todos?.map((todo) => (
+              <motion.div
+                key={todo.id}
+                layout
+                initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, x: -20, scale: 0.95 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                className={cn(
+                  'group flex items-center gap-3 p-3 rounded-xl transition-all',
+                  'hover:bg-background/50',
+                  todo.completed && 'opacity-60'
                 )}
-              </button>
-              <div className="flex-1 min-w-0">
-                <span
-                  className={cn(
-                    'text-sm block truncate',
-                    todo.completed && 'line-through text-muted-foreground'
-                  )}
+              >
+                <motion.button 
+                  onClick={() => toggleTodo(todo.id)} 
+                  className="flex-shrink-0"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                 >
-                  {todo.text}
-                </span>
-                {todo.category && (
+                  {todo.completed ? (
+                    <CheckCircle2 className="w-5 h-5 text-primary" />
+                  ) : (
+                    <Circle className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" />
+                  )}
+                </motion.button>
+                <div className="flex-1 min-w-0">
                   <span
                     className={cn(
-                      'text-xs px-1.5 py-0.5 rounded-full inline-block mt-1',
-                      categoryColors[todo.category]
+                      'text-sm block truncate transition-all',
+                      todo.completed && 'line-through text-muted-foreground'
                     )}
                   >
-                    {todo.category}
+                    {todo.text}
                   </span>
-                )}
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => deleteTodo(todo.id)}
-              >
-                <Trash2 className="w-4 h-4 text-destructive" />
-              </Button>
-            </div>
-          ))
-        )}
+                  {todo.category && (
+                    <span
+                      className={cn(
+                        'text-[10px] px-2 py-0.5 rounded-full inline-block mt-1.5 border',
+                        categoryColors[todo.category]
+                      )}
+                    >
+                      {todo.category}
+                    </span>
+                  )}
+                </div>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 0 }}
+                  whileHover={{ opacity: 1, scale: 1 }}
+                  className="group-hover:opacity-100"
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7 hover:bg-destructive/10"
+                    onClick={() => deleteTodo(todo.id)}
+                  >
+                    <Trash2 className="w-4 h-4 text-destructive" />
+                  </Button>
+                </motion.div>
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
