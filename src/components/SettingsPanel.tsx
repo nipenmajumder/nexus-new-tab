@@ -14,12 +14,31 @@ import { fontOptions, allFonts } from '@/lib/fonts';
 import { cn } from '@/lib/utils';
 
 const gradientPresets = [
+  // Dark Themes
   { name: 'Midnight', start: '#0f0c29', end: '#302b63' },
-  { name: 'Ocean', start: '#141E30', end: '#243B55' },
+  { name: 'Ocean Deep', start: '#141E30', end: '#243B55' },
   { name: 'Aurora', start: '#1a1a2e', end: '#16213e' },
-  { name: 'Sunset', start: '#2b1055', end: '#7597de' },
-  { name: 'Forest', start: '#0d3331', end: '#1d976c' },
   { name: 'Berry', start: '#2d1f3d', end: '#614385' },
+  // Sunset & Warm
+  { name: 'Sunset', start: '#ff6b6b', end: '#feca57' },
+  { name: 'Dusk', start: '#2b1055', end: '#7597de' },
+  { name: 'Rose Gold', start: '#f093fb', end: '#f5576c' },
+  { name: 'Peach', start: '#ee9ca7', end: '#ffdde1' },
+  // Ocean & Cool
+  { name: 'Ocean', start: '#0077b6', end: '#00b4d8' },
+  { name: 'Teal Wave', start: '#11998e', end: '#38ef7d' },
+  { name: 'Arctic', start: '#74ebd5', end: '#9face6' },
+  { name: 'Sky Blue', start: '#a8edea', end: '#fed6e3' },
+  // Nature
+  { name: 'Forest', start: '#0d3331', end: '#1d976c' },
+  { name: 'Emerald', start: '#134e5e', end: '#71b280' },
+  { name: 'Spring', start: '#00b09b', end: '#96c93d' },
+  { name: 'Lavender', start: '#e0c3fc', end: '#8ec5fc' },
+  // Modern & Vibrant
+  { name: 'Neon', start: '#fc466b', end: '#3f5efb' },
+  { name: 'Electric', start: '#4776e6', end: '#8e54e9' },
+  { name: 'Candy', start: '#ff9a9e', end: '#fecfef' },
+  { name: 'Cosmic', start: '#667eea', end: '#764ba2' },
 ];
 
 export function SettingsPanel() {
