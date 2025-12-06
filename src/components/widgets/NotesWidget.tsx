@@ -1,15 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
-import { StickyNote, Maximize2, Minimize2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { StickyNote, Maximize2, Minimize2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useStorage } from '@/hooks/useStorage';
 import { cn } from '@/lib/utils';
+
+// Debounce utility
+function debounce<T extends (...args: any[]) => any>(fn: T, ms: number) {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return function (this: any, ...args: Parameters<T>) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => fn.apply(this, args), ms);
+  };
+}
 
 export function NotesWidget() {
   const [notes, setNotes] = useStorage('notes');
   const [localNotes, setLocalNotes] = useState('');
   const [expanded, setExpanded] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [justSaved, setJustSaved] = useState(false);
 
   // Sync local notes with storage
   useEffect(() => {
@@ -24,6 +35,8 @@ export function NotesWidget() {
       setIsSaving(true);
       await setNotes(value);
       setIsSaving(false);
+      setJustSaved(true);
+      setTimeout(() => setJustSaved(false), 2000);
     }, 500),
     [setNotes]
   );
@@ -37,19 +50,40 @@ export function NotesWidget() {
   const charCount = localNotes.length;
 
   return (
-    <div className={cn('widget animate-fade-in transition-all', expanded && 'col-span-2 row-span-2')}>
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <StickyNote className="w-4 h-4" />
-          <span className="text-sm font-medium">Quick Notes</span>
+    <motion.div 
+      className={cn('widget', expanded && 'md:col-span-2 md:row-span-2')}
+      layout
+      transition={{ type: 'spring', stiffness: 200, damping: 25 }}
+    >
+      <div className="widget-header">
+        <div className="widget-header-left">
+          <StickyNote className="widget-header-icon" />
+          <span className="widget-title">Quick Notes</span>
           {isSaving && (
-            <span className="text-xs text-muted-foreground animate-pulse">Saving...</span>
+            <motion.span 
+              className="text-xs text-muted-foreground ml-2"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+            >
+              Saving...
+            </motion.span>
+          )}
+          {justSaved && !isSaving && (
+            <motion.span 
+              className="text-xs text-green-400 ml-2 flex items-center gap-1"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0 }}
+            >
+              <Check className="w-3 h-3" />
+              Saved
+            </motion.span>
           )}
         </div>
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7"
+          className="h-7 w-7 hover:bg-white/10"
           onClick={() => setExpanded(!expanded)}
         >
           {expanded ? (
@@ -65,24 +99,15 @@ export function NotesWidget() {
         value={localNotes}
         onChange={handleChange}
         className={cn(
-          'resize-none bg-background/50 border-none focus-visible:ring-1 focus-visible:ring-primary/50 font-body flex-1',
-          expanded ? 'min-h-[300px]' : ''
+          'resize-none bg-background/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/30 font-body flex-1 transition-all',
+          expanded ? 'min-h-[300px]' : 'min-h-[180px]'
         )}
       />
 
-      <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
-        <span>{charCount} characters</span>
-        <span className="opacity-50">Auto-saved</span>
+      <div className="flex justify-between items-center mt-3 text-xs text-muted-foreground">
+        <span className="tabular-nums">{charCount.toLocaleString()} characters</span>
+        <span className="opacity-60">Auto-saved</span>
       </div>
-    </div>
+    </motion.div>
   );
-}
-
-// Debounce utility
-function debounce<T extends (...args: any[]) => any>(fn: T, ms: number) {
-  let timeoutId: ReturnType<typeof setTimeout>;
-  return function (this: any, ...args: Parameters<T>) {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn.apply(this, args), ms);
-  };
 }
