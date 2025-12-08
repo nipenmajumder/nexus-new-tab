@@ -189,7 +189,7 @@
   
   .widget {
     @apply glass-card p-5 transition-all duration-300;
-    min-height: 320px;
+    height: 320px;
     display: flex;
     flex-direction: column;
     position: relative;

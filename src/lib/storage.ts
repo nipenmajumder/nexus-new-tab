@@ -27,8 +27,6 @@ export interface StorageData {
   clockSettings: ClockSettings;
   googleApps: GoogleApp[];
   aiTools: AITool[];
-  musicServices: MusicService[];
-  defaultMusicService: 'spotify' | 'youtube';
   quoteCache: QuoteData;
   dragEnabled: boolean;
 }
@@ -72,14 +70,6 @@ export interface AITool {
   order: number;
 }
 
-export interface MusicService {
-  name: 'spotify' | 'youtube';
-  links: Array<{
-    id: string;
-    title: string;
-    url: string;
-  }>;
-}
 
 export interface PomodoroSettings {
   workDuration: number;
@@ -104,7 +94,6 @@ export interface WidgetLayout {
   quickLinks: { visible: boolean; order: number };
   googleApps: { visible: boolean; order: number };
   aiTools: { visible: boolean; order: number };
-  music: { visible: boolean; order: number };
   search: { visible: boolean; order: number };
   quote: { visible: boolean; order: number };
 }
@@ -191,9 +180,8 @@ const defaultData: StorageData = {
     quickLinks: { visible: true, order: 5 },
     googleApps: { visible: true, order: 6 },
     aiTools: { visible: true, order: 7 },
-    music: { visible: true, order: 8 },
-    search: { visible: true, order: 9 },
-    quote: { visible: true, order: 10 },
+    search: { visible: true, order: 8 },
+    quote: { visible: true, order: 9 },
   },
   backgroundSettings: {
     type: 'gradient',
@@ -243,27 +231,6 @@ const defaultData: StorageData = {
     { id: '5', name: 'Midjourney', url: 'https://www.midjourney.com', icon: 'https://www.midjourney.com/favicon.ico', color: '#000000', order: 4 },
     { id: '6', name: 'HuggingFace', url: 'https://huggingface.co', icon: 'https://huggingface.co/favicon.ico', color: '#ff9d00', order: 5 },
   ],
-  musicServices: [
-    {
-      name: 'spotify',
-      links: [
-        { id: '1', title: 'Home', url: 'https://open.spotify.com' },
-        { id: '2', title: 'Search', url: 'https://open.spotify.com/search' },
-        { id: '3', title: 'Your Library', url: 'https://open.spotify.com/collection' },
-        { id: '4', title: 'Liked Songs', url: 'https://open.spotify.com/collection/tracks' },
-      ],
-    },
-    {
-      name: 'youtube',
-      links: [
-        { id: '1', title: 'Home', url: 'https://music.youtube.com' },
-        { id: '2', title: 'Explore', url: 'https://music.youtube.com/explore' },
-        { id: '3', title: 'Library', url: 'https://music.youtube.com/library' },
-        { id: '4', title: 'Liked Music', url: 'https://music.youtube.com/playlist?list=LM' },
-      ],
-    },
-  ],
-  defaultMusicService: 'spotify',
   quoteCache: {
     quote: '',
     author: '',
