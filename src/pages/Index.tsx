@@ -11,7 +11,6 @@ import { NotesWidget } from '@/components/widgets/NotesWidget';
 import { QuickLinksWidget } from '@/components/widgets/QuickLinksWidget';
 import { GoogleAppsWidget } from '@/components/widgets/GoogleAppsWidget';
 import { AIToolsWidget } from '@/components/widgets/AIToolsWidget';
-import { MusicWidget } from '@/components/widgets/MusicWidget';
 import { SearchWidget } from '@/components/widgets/SearchWidget';
 import { QuoteWidget } from '@/components/widgets/QuoteWidget';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -120,7 +119,6 @@ function DashboardContent() {
     { key: 'notes', component: NotesWidget },
     { key: 'googleApps', component: GoogleAppsWidget },
     { key: 'aiTools', component: AIToolsWidget },
-    { key: 'music', component: MusicWidget },
     { key: 'quote', component: QuoteWidget },
   ];
 
