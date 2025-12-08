@@ -17,7 +17,11 @@ import { useSettings } from '@/contexts/SettingsContext';
 import { AITool } from '@/lib/storage';
 import { cn } from '@/lib/utils';
 
-export function AIToolsWidget() {
+interface AIToolsWidgetProps {
+  compact?: boolean;
+}
+
+export function AIToolsWidget({ compact = false }: AIToolsWidgetProps) {
   const [tools, setTools] = useStorage('aiTools');
   const { useLightText } = useSettings();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -89,7 +93,7 @@ export function AIToolsWidget() {
   if (!tools) return null;
 
   return (
-    <div className="widget animate-fade-in">
+    <div className={cn("animate-fade-in", compact ? 'widget-compact' : 'widget')}>
       <div className="flex items-center justify-between mb-4">
         <div className={cn('flex items-center gap-2', mutedColorClass)}>
           <Sparkles className="w-4 h-4" />
@@ -158,8 +162,8 @@ export function AIToolsWidget() {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        {sortedTools.map((tool) => (
+      <div className={cn("grid gap-2", compact ? "grid-cols-3" : "grid-cols-3 gap-3")}>
+        {(compact ? sortedTools.slice(0, 6) : sortedTools).map((tool) => (
           <div
             key={tool.id}
             draggable
@@ -167,15 +171,18 @@ export function AIToolsWidget() {
             onDragOver={handleDragOver}
             onDrop={() => handleDrop(tool.id)}
             className={cn(
-              'group relative flex flex-col items-center gap-2 p-3 rounded-lg cursor-pointer transition-all',
+              'group relative flex flex-col items-center gap-1 rounded-lg cursor-pointer transition-all',
               hoverBgClass,
-              draggedId === tool.id && 'opacity-50'
+              draggedId === tool.id && 'opacity-50',
+              compact ? 'p-2' : 'p-3 gap-2'
             )}
           >
-            <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-              <GripVertical className={cn('w-3 h-3', mutedColorClass)} />
-            </div>
-            <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+            {!compact && (
+              <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                <GripVertical className={cn('w-3 h-3', mutedColorClass)} />
+              </div>
+            )}
+            {!compact && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -187,7 +194,7 @@ export function AIToolsWidget() {
               >
                 <Trash2 className="w-3 h-3" />
               </Button>
-            </div>
+            )}
             <a
               href={tool.url}
               target="_blank"
@@ -196,7 +203,10 @@ export function AIToolsWidget() {
               onClick={(e) => e.stopPropagation()}
             >
               <div
-                className="w-14 h-14 rounded-xl flex items-center justify-center overflow-hidden shadow-lg transition-transform group-hover:scale-105"
+                className={cn(
+                  "rounded-xl flex items-center justify-center overflow-hidden shadow-lg transition-transform group-hover:scale-105",
+                  compact ? "w-10 h-10" : "w-14 h-14"
+                )}
                 style={{
                   backgroundColor: tool.color || '#3b82f6',
                 }}
@@ -204,16 +214,18 @@ export function AIToolsWidget() {
                 <img
                   src={tool.icon}
                   alt={tool.name}
-                  className="w-10 h-10 object-contain"
+                  className={compact ? "w-6 h-6 object-contain" : "w-10 h-10 object-contain"}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = `https://www.google.com/s2/favicons?domain=${tool.url}&sz=64`;
                   }}
                 />
               </div>
-              <span className={cn('text-xs text-center line-clamp-2 font-medium', textColorClass)}>
-                {tool.name}
-              </span>
+              {!compact && (
+                <span className={cn('text-xs text-center line-clamp-2 font-medium', textColorClass)}>
+                  {tool.name}
+                </span>
+              )}
             </a>
           </div>
         ))}

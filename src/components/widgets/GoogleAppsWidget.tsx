@@ -17,7 +17,11 @@ import { useSettings } from '@/contexts/SettingsContext';
 import { GoogleApp } from '@/lib/storage';
 import { cn } from '@/lib/utils';
 
-export function GoogleAppsWidget() {
+interface GoogleAppsWidgetProps {
+  compact?: boolean;
+}
+
+export function GoogleAppsWidget({ compact = false }: GoogleAppsWidgetProps) {
   const [apps, setApps] = useStorage('googleApps');
   const { useLightText } = useSettings();
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -87,7 +91,7 @@ export function GoogleAppsWidget() {
   if (!apps) return null;
 
   return (
-    <div className="widget animate-fade-in">
+    <div className={cn("animate-fade-in", compact ? 'widget-compact' : 'widget')}>
       <div className="flex items-center justify-between mb-4">
         <div className={cn('flex items-center gap-2', mutedColorClass)}>
           <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -149,8 +153,8 @@ export function GoogleAppsWidget() {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-4 gap-3">
-        {sortedApps.map((app) => (
+      <div className={cn("grid gap-2", compact ? "grid-cols-4" : "grid-cols-4 gap-3")}>
+        {(compact ? sortedApps.slice(0, 8) : sortedApps).map((app) => (
           <div
             key={app.id}
             draggable
@@ -158,15 +162,18 @@ export function GoogleAppsWidget() {
             onDragOver={handleDragOver}
             onDrop={() => handleDrop(app.id)}
             className={cn(
-              'group relative flex flex-col items-center gap-2 p-3 rounded-lg cursor-pointer transition-all',
+              'group relative flex flex-col items-center gap-1 rounded-lg cursor-pointer transition-all',
               hoverBgClass,
-              draggedId === app.id && 'opacity-50'
+              draggedId === app.id && 'opacity-50',
+              compact ? 'p-2' : 'p-3 gap-2'
             )}
           >
-            <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <GripVertical className={cn('w-3 h-3', mutedColorClass)} />
-            </div>
-            <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            {!compact && (
+              <div className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <GripVertical className={cn('w-3 h-3', mutedColorClass)} />
+              </div>
+            )}
+            {!compact && (
               <Button
                 variant="ghost"
                 size="icon"
@@ -178,7 +185,7 @@ export function GoogleAppsWidget() {
               >
                 <Trash2 className="w-3 h-3" />
               </Button>
-            </div>
+            )}
             <a
               href={app.url}
               target="_blank"
@@ -186,20 +193,25 @@ export function GoogleAppsWidget() {
               className="flex flex-col items-center gap-2 w-full"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center overflow-hidden shadow-md">
+              <div className={cn(
+                "rounded-full bg-white flex items-center justify-center overflow-hidden shadow-md",
+                compact ? "w-8 h-8" : "w-12 h-12"
+              )}>
                 <img
                   src={app.icon}
                   alt={app.name}
-                  className="w-8 h-8 object-contain"
+                  className={compact ? "w-5 h-5 object-contain" : "w-8 h-8 object-contain"}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = `https://www.google.com/s2/favicons?domain=${app.url}&sz=64`;
                   }}
                 />
               </div>
-              <span className={cn('text-xs text-center line-clamp-2', textColorClass)}>
-                {app.name}
-              </span>
+              {!compact && (
+                <span className={cn('text-xs text-center line-clamp-2', textColorClass)}>
+                  {app.name}
+                </span>
+              )}
             </a>
           </div>
         ))}

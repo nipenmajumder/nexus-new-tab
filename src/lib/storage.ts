@@ -29,6 +29,7 @@ export interface StorageData {
   aiTools: AITool[];
   quoteCache: QuoteData;
   dragEnabled: boolean;
+  compactMode: boolean;
 }
 
 export interface Todo {
@@ -237,6 +238,7 @@ const defaultData: StorageData = {
     fetchedAt: 0,
   },
   dragEnabled: true,
+  compactMode: false,
 };
 
 // Check if chrome.storage is available

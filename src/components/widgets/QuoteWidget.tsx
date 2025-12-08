@@ -12,7 +12,11 @@ interface QuoteData {
   fetchedAt: number;
 }
 
-export function QuoteWidget() {
+interface QuoteWidgetProps {
+  compact?: boolean;
+}
+
+export function QuoteWidget({ compact = false }: QuoteWidgetProps) {
   const [quoteCache, setQuoteCache] = useStorage('quoteCache');
   const [isLoading, setIsLoading] = useState(false);
   const { useLightText } = useSettings();
@@ -53,17 +57,18 @@ export function QuoteWidget() {
   return (
     <div
       className={cn(
-        'p-6 rounded-2xl backdrop-blur-md h-full flex flex-col',
+        'rounded-2xl backdrop-blur-md flex flex-col',
         useLightText
           ? 'bg-white/10 border border-white/20'
-          : 'bg-white/50 border border-gray-200'
+          : 'bg-white/50 border border-gray-200',
+        compact ? 'p-4 h-[200px]' : 'p-6 h-full'
       )}
     >
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className={cn("flex items-center justify-between", compact ? "mb-2" : "mb-4")}>
         <div className="flex items-center gap-2">
-          <Quote className={cn('w-5 h-5', textColorClass)} />
-          <h3 className={cn('font-heading font-semibold', textColorClass)}>
+          <Quote className={cn(useLightText ? 'text-white' : 'text-gray-900', compact ? "w-4 h-4" : "w-5 h-5")} />
+          <h3 className={cn('font-heading font-semibold', textColorClass, compact && "text-sm")}>
             Daily Quote
           </h3>
         </div>
@@ -85,14 +90,15 @@ export function QuoteWidget() {
 
       {/* Quote Content */}
       {quoteCache ? (
-        <div className="flex-1 flex flex-col justify-between">
+        <div className="flex-1 flex flex-col justify-between overflow-hidden">
           <div className="relative">
-            <Sparkles className={cn('w-6 h-6 mb-3 opacity-50', textColorClass)} />
-            <blockquote className="space-y-4">
+            {!compact && <Sparkles className={cn('w-6 h-6 mb-3 opacity-50', textColorClass)} />}
+            <blockquote className="space-y-2">
               <p
                 className={cn(
-                  'text-lg font-medium leading-relaxed italic',
-                  textColorClass
+                  'font-medium leading-relaxed italic',
+                  textColorClass,
+                  compact ? 'text-sm line-clamp-3' : 'text-lg'
                 )}
               >
                 "{quoteCache.quote}"
@@ -100,8 +106,8 @@ export function QuoteWidget() {
             </blockquote>
           </div>
 
-          <div className={cn('mt-6 pt-4 border-t', borderColorClass)}>
-            <p className={cn('text-sm font-medium text-right', mutedColorClass)}>
+          <div className={cn('border-t', borderColorClass, compact ? "mt-2 pt-2" : "mt-6 pt-4")}>
+            <p className={cn('font-medium text-right', mutedColorClass, compact ? "text-xs" : "text-sm")}>
               — {quoteCache.author}
             </p>
           </div>

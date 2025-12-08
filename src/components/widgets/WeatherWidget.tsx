@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Cloud, Sun, CloudRain, CloudSnow, Wind, Droplets, MapPin, Settings, Loader2, Plus, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +43,11 @@ const weatherIcons: Record<string, React.ReactNode> = {
   default: <Cloud className="w-12 h-12 text-gray-400" />,
 };
 
-export function WeatherWidget() {
+interface WeatherWidgetProps {
+  compact?: boolean;
+}
+
+export function WeatherWidget({ compact = false }: WeatherWidgetProps) {
   const [settings, setSettings] = useStorage('weatherSettings');
   const [weatherCache, setWeatherCache] = useStorage('weatherCache');
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -231,7 +235,7 @@ export function WeatherWidget() {
   const hasMultipleLocations = (settings?.locations?.length ?? 0) > 1;
 
   return (
-    <div className="widget animate-fade-in">
+    <div className={cn("animate-fade-in", compact ? 'widget-compact' : 'widget')}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2 text-muted-foreground">
           <Cloud className="w-4 h-4" />
@@ -359,14 +363,14 @@ export function WeatherWidget() {
                   </Button>
                 )}
               </div>
-              <div className="text-5xl font-heading font-bold">
+              <div className={cn("font-heading font-bold", compact ? "text-3xl" : "text-5xl")}>
                 {weather.temp}°
               </div>
-              <p className="text-sm text-muted-foreground capitalize">
+              <p className={cn("text-muted-foreground capitalize", compact ? "text-xs" : "text-sm")}>
                 {weather.description}
               </p>
             </div>
-            <div>{getWeatherIcon(weather.icon)}</div>
+            <div>{compact ? React.cloneElement(getWeatherIcon(weather.icon) as React.ReactElement, { className: 'w-8 h-8' }) : getWeatherIcon(weather.icon)}</div>
           </div>
 
           <div className="flex gap-4 text-sm text-muted-foreground mb-4">
@@ -380,7 +384,7 @@ export function WeatherWidget() {
             </div>
           </div>
 
-          {weather.forecast && weather.forecast.length > 0 && (
+          {!compact && weather.forecast && weather.forecast.length > 0 && (
             <div className="border-t border-border/50 pt-3">
               <div className="grid grid-cols-5 gap-2 text-center">
                 {weather.forecast.map((day, index) => (
