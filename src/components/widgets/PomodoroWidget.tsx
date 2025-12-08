@@ -10,7 +10,11 @@ import { cn } from '@/lib/utils';
 
 type TimerMode = 'work' | 'break' | 'longBreak';
 
-export function PomodoroWidget() {
+interface PomodoroWidgetProps {
+  compact?: boolean;
+}
+
+export function PomodoroWidget({ compact = false }: PomodoroWidgetProps) {
   const [settings, setSettings] = useStorage('pomodoroSettings');
   const [stats, setStats] = useStorage('pomodoroStats');
   const { useLightText } = useSettings();
@@ -142,126 +146,133 @@ export function PomodoroWidget() {
   };
 
   return (
-    <div className="widget">
+    <div className={compact ? 'widget-compact' : 'widget'}>
       <div className="widget-header">
         <div className="widget-header-left">
           <Timer className="widget-header-icon" />
           <span className="widget-title">Pomodoro</span>
         </div>
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-white/10" onClick={toggleSound}>
-            {settings?.soundEnabled ? (
-              <Volume2 className="w-4 h-4" />
-            ) : (
-              <VolumeX className="w-4 h-4 text-muted-foreground" />
-            )}
-          </Button>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-white/10">
-                <Settings className="w-4 h-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-64 glass" align="end">
-              <div className="space-y-5">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Work: {settings?.workDuration || 25}m</label>
-                  <Slider
-                    value={[settings?.workDuration || 25]}
-                    onValueChange={async ([value]) => {
-                      if (settings) {
-                        await setSettings({ ...settings, workDuration: value });
-                        if (mode === 'work' && !isRunning) {
-                          setTimeLeft(value * 60);
+        {!compact && (
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-white/10" onClick={toggleSound}>
+              {settings?.soundEnabled ? (
+                <Volume2 className="w-4 h-4" />
+              ) : (
+                <VolumeX className="w-4 h-4 text-muted-foreground" />
+              )}
+            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-white/10">
+                  <Settings className="w-4 h-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-64 glass" align="end">
+                <div className="space-y-5">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Work: {settings?.workDuration || 25}m</label>
+                    <Slider
+                      value={[settings?.workDuration || 25]}
+                      onValueChange={async ([value]) => {
+                        if (settings) {
+                          await setSettings({ ...settings, workDuration: value });
+                          if (mode === 'work' && !isRunning) {
+                            setTimeLeft(value * 60);
+                          }
                         }
-                      }
-                    }}
-                    min={5}
-                    max={60}
-                    step={5}
-                  />
+                      }}
+                      min={5}
+                      max={60}
+                      step={5}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Break: {settings?.breakDuration || 5}m</label>
+                    <Slider
+                      value={[settings?.breakDuration || 5]}
+                      onValueChange={async ([value]) => {
+                        if (settings) {
+                          await setSettings({ ...settings, breakDuration: value });
+                        }
+                      }}
+                      min={1}
+                      max={15}
+                      step={1}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Long Break: {settings?.longBreakDuration || 15}m</label>
+                    <Slider
+                      value={[settings?.longBreakDuration || 15]}
+                      onValueChange={async ([value]) => {
+                        if (settings) {
+                          await setSettings({ ...settings, longBreakDuration: value });
+                        }
+                      }}
+                      min={10}
+                      max={30}
+                      step={5}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Break: {settings?.breakDuration || 5}m</label>
-                  <Slider
-                    value={[settings?.breakDuration || 5]}
-                    onValueChange={async ([value]) => {
-                      if (settings) {
-                        await setSettings({ ...settings, breakDuration: value });
-                      }
-                    }}
-                    min={1}
-                    max={15}
-                    step={1}
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Long Break: {settings?.longBreakDuration || 15}m</label>
-                  <Slider
-                    value={[settings?.longBreakDuration || 15]}
-                    onValueChange={async ([value]) => {
-                      if (settings) {
-                        await setSettings({ ...settings, longBreakDuration: value });
-                      }
-                    }}
-                    min={10}
-                    max={30}
-                    step={5}
-                  />
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
-        </div>
+              </PopoverContent>
+            </Popover>
+          </div>
+        )}
       </div>
 
       {/* Mode indicator */}
       <motion.div 
-        className="text-center mb-3"
+        className={cn("text-center", compact ? "mb-1" : "mb-3")}
         key={mode}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
       >
         <span className={cn(
-          'text-sm font-medium px-3 py-1 rounded-full',
+          'font-medium px-3 py-1 rounded-full',
           modeConfig[mode].bg,
-          modeConfig[mode].color
+          modeConfig[mode].color,
+          compact ? "text-xs" : "text-sm"
         )}>
           {modeLabels[mode]}
         </span>
       </motion.div>
 
       {/* Timer display with progress ring */}
-      <div className="relative flex items-center justify-center mb-5 flex-1">
-        <svg className="w-36 h-36 -rotate-90">
+      <div className={cn("relative flex items-center justify-center flex-1", compact ? "mb-2" : "mb-5")}>
+        <svg className={compact ? "w-20 h-20 -rotate-90" : "w-36 h-36 -rotate-90"}>
           <circle
-            cx="72"
-            cy="72"
-            r="50"
+            cx={compact ? "40" : "72"}
+            cy={compact ? "40" : "72"}
+            r={compact ? "30" : "50"}
             stroke="currentColor"
-            strokeWidth="6"
+            strokeWidth={compact ? "4" : "6"}
             fill="none"
             className="text-muted/20"
           />
           <motion.circle
-            cx="72"
-            cy="72"
-            r="50"
-            strokeWidth="6"
+            cx={compact ? "40" : "72"}
+            cy={compact ? "40" : "72"}
+            r={compact ? "30" : "50"}
+            strokeWidth={compact ? "4" : "6"}
             fill="none"
             strokeLinecap="round"
             className={cn('transition-colors duration-300', modeConfig[mode].stroke)}
             style={{
-              strokeDasharray: circumference,
-              strokeDashoffset,
+              strokeDasharray: compact ? 2 * Math.PI * 30 : circumference,
+              strokeDashoffset: compact ? (2 * Math.PI * 30) - (progress / 100) * (2 * Math.PI * 30) : strokeDashoffset,
             }}
             initial={false}
-            animate={{ strokeDashoffset }}
+            animate={{ strokeDashoffset: compact ? (2 * Math.PI * 30) - (progress / 100) * (2 * Math.PI * 30) : strokeDashoffset }}
             transition={{ duration: 0.5, ease: 'linear' }}
           />
         </svg>
         <motion.div 
-          className={cn('absolute text-4xl font-mono font-bold tabular-nums', textColorClass)}
+          className={cn(
+            'absolute font-mono font-bold tabular-nums',
+            textColorClass,
+            compact ? "text-lg" : "text-4xl"
+          )}
           key={formatTime(timeLeft)}
           initial={{ scale: 0.95, opacity: 0.8 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -272,15 +283,15 @@ export function PomodoroWidget() {
       </div>
 
       {/* Controls */}
-      <div className="flex justify-center gap-3 mb-4">
+      <div className={cn("flex justify-center gap-2", compact ? "" : "mb-4")}>
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Button
             variant="outline"
             size="icon"
             onClick={resetTimer}
-            className="h-11 w-11 rounded-full"
+            className={compact ? "h-8 w-8 rounded-full" : "h-11 w-11 rounded-full"}
           >
-            <RotateCcw className="w-4 h-4" />
+            <RotateCcw className={compact ? "w-3 h-3" : "w-4 h-4"} />
           </Button>
         </motion.div>
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -288,25 +299,28 @@ export function PomodoroWidget() {
             size="icon"
             onClick={toggleTimer}
             className={cn(
-              'h-11 w-11 rounded-full transition-shadow',
-              isRunning && 'animate-glow-pulse'
+              'rounded-full transition-shadow',
+              isRunning && 'animate-glow-pulse',
+              compact ? "h-8 w-8" : "h-11 w-11"
             )}
           >
             {isRunning ? (
-              <Pause className="w-5 h-5" />
+              <Pause className={compact ? "w-3 h-3" : "w-5 h-5"} />
             ) : (
-              <Play className="w-5 h-5 ml-0.5" />
+              <Play className={cn(compact ? "w-3 h-3" : "w-5 h-5", "ml-0.5")} />
             )}
           </Button>
         </motion.div>
       </div>
 
-      {/* Stats */}
-      <div className={cn("text-center text-sm", mutedColorClass)}>
-        <span>Today: <strong className={textColorClass}>{stats?.todaySessions || 0}</strong></span>
-        <span className="mx-3 opacity-50">•</span>
-        <span>Total: <strong className={textColorClass}>{stats?.totalSessions || 0}</strong></span>
-      </div>
+      {/* Stats - hidden in compact mode */}
+      {!compact && (
+        <div className={cn("text-center text-sm", mutedColorClass)}>
+          <span>Today: <strong className={textColorClass}>{stats?.todaySessions || 0}</strong></span>
+          <span className="mx-3 opacity-50">•</span>
+          <span>Total: <strong className={textColorClass}>{stats?.totalSessions || 0}</strong></span>
+        </div>
+      )}
     </div>
   );
 }

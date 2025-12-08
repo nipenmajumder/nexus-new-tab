@@ -16,7 +16,11 @@ const categoryColors: Record<string, string> = {
   later: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
 };
 
-export function TodoWidget() {
+interface TodoWidgetProps {
+  compact?: boolean;
+}
+
+export function TodoWidget({ compact = false }: TodoWidgetProps) {
   const [todos, setTodos] = useStorage('todos');
   const [newTodo, setNewTodo] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
@@ -61,7 +65,7 @@ export function TodoWidget() {
   const totalCount = todos?.length || 0;
 
   return (
-    <div className="widget">
+    <div className={compact ? 'widget-compact' : 'widget'}>
       <div className="widget-header">
         <div className="widget-header-left">
           <ListTodo className="widget-header-icon" />
@@ -75,43 +79,48 @@ export function TodoWidget() {
       </div>
 
       {/* Add todo */}
-      <div className="flex gap-2 mb-3">
+      <div className="flex gap-2 mb-2">
         <Input
           placeholder="Add a task..."
           value={newTodo}
           onChange={(e) => setNewTodo(e.target.value)}
           onKeyPress={handleKeyPress}
-          className="bg-background/50 text-sm border-0 focus-visible:ring-1 focus-visible:ring-primary/50"
+          className={cn(
+            "bg-background/50 border-0 focus-visible:ring-1 focus-visible:ring-primary/50",
+            compact ? "text-xs h-8" : "text-sm"
+          )}
         />
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Button size="icon" onClick={addTodo} disabled={!newTodo.trim()} className="shrink-0">
-            <Plus className="w-4 h-4" />
+          <Button size="icon" onClick={addTodo} disabled={!newTodo.trim()} className={cn("shrink-0", compact && "h-8 w-8")}>
+            <Plus className={compact ? "w-3 h-3" : "w-4 h-4"} />
           </Button>
         </motion.div>
       </div>
 
-      {/* Category pills */}
-      <div className="flex flex-wrap gap-1.5 mb-4">
-        {categories.map((cat) => (
-          <motion.button
-            key={cat}
-            onClick={() => setSelectedCategory(selectedCategory === cat ? undefined : cat)}
-            className={cn(
-              'px-2.5 py-1 rounded-full text-xs transition-all border capitalize',
-              selectedCategory === cat
-                ? categoryColors[cat]
-                : 'bg-muted/50 text-muted-foreground border-transparent hover:bg-muted'
-            )}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            {cat}
-          </motion.button>
-        ))}
-      </div>
+      {/* Category pills - hidden in compact mode */}
+      {!compact && (
+        <div className="flex flex-wrap gap-1.5 mb-4">
+          {categories.map((cat) => (
+            <motion.button
+              key={cat}
+              onClick={() => setSelectedCategory(selectedCategory === cat ? undefined : cat)}
+              className={cn(
+                'px-2.5 py-1 rounded-full text-xs transition-all border capitalize',
+                selectedCategory === cat
+                  ? categoryColors[cat]
+                  : 'bg-muted/50 text-muted-foreground border-transparent hover:bg-muted'
+              )}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {cat}
+            </motion.button>
+          ))}
+        </div>
+      )}
 
       {/* Todo list */}
-      <div className="space-y-2 flex-1 overflow-y-auto max-h-52 pr-1">
+      <div className={cn("space-y-1 flex-1 overflow-y-auto pr-1", compact ? "max-h-24" : "max-h-52")}>
         <AnimatePresence mode="popLayout">
           {todos?.length === 0 ? (
             <motion.p 

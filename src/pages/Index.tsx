@@ -43,7 +43,7 @@ const itemVariants = {
 };
 
 function DashboardContent() {
-  const { widgetLayout, setWidgetLayout, isLoading, useLightText, dragEnabled } = useSettings();
+  const { widgetLayout, setWidgetLayout, isLoading, useLightText, dragEnabled, compactMode } = useSettings();
   const [showContent, setShowContent] = useState(false);
   const [minLoadingComplete, setMinLoadingComplete] = useState(false);
   const [draggedWidget, setDraggedWidget] = useState<string | null>(null);
@@ -239,7 +239,12 @@ function DashboardContent() {
             initial="hidden"
             animate="visible"
           >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={cn(
+              "grid gap-4",
+              compactMode 
+                ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4" 
+                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            )}>
               {sortedWidgets.map(({ key, component: Component }) => (
                 <motion.div
                   key={key}
@@ -270,7 +275,7 @@ function DashboardContent() {
                       <span>Drag</span>
                     </div>
                   )}
-                  <Component />
+                  <Component compact={compactMode} />
                 </motion.div>
               ))}
             </div>

@@ -193,6 +193,14 @@
     display: flex;
     flex-direction: column;
     position: relative;
+  }
+
+  .widget-compact {
+    @apply glass-card p-3 transition-all duration-300;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
     overflow: hidden;
   }
   

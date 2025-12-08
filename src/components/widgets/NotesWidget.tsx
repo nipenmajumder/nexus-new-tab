@@ -15,7 +15,11 @@ function debounce<T extends (...args: any[]) => any>(fn: T, ms: number) {
   };
 }
 
-export function NotesWidget() {
+interface NotesWidgetProps {
+  compact?: boolean;
+}
+
+export function NotesWidget({ compact = false }: NotesWidgetProps) {
   const [notes, setNotes] = useStorage('notes');
   const [localNotes, setLocalNotes] = useState('');
   const [expanded, setExpanded] = useState(false);
@@ -51,7 +55,10 @@ export function NotesWidget() {
 
   return (
     <motion.div 
-      className={cn('widget', expanded && 'md:col-span-2 md:row-span-2')}
+      className={cn(
+        compact ? 'widget-compact' : 'widget',
+        expanded && !compact && 'md:col-span-2 md:row-span-2'
+      )}
       layout
       transition={{ type: 'spring', stiffness: 200, damping: 25 }}
     >
@@ -80,18 +87,20 @@ export function NotesWidget() {
             </motion.span>
           )}
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 hover:bg-white/10"
-          onClick={() => setExpanded(!expanded)}
-        >
-          {expanded ? (
-            <Minimize2 className="w-4 h-4" />
-          ) : (
-            <Maximize2 className="w-4 h-4" />
-          )}
-        </Button>
+        {!compact && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 hover:bg-white/10"
+            onClick={() => setExpanded(!expanded)}
+          >
+            {expanded ? (
+              <Minimize2 className="w-4 h-4" />
+            ) : (
+              <Maximize2 className="w-4 h-4" />
+            )}
+          </Button>
+        )}
       </div>
 
       <Textarea
@@ -100,14 +109,16 @@ export function NotesWidget() {
         onChange={handleChange}
         className={cn(
           'resize-none bg-background/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/30 font-body flex-1 transition-all',
-          expanded ? 'min-h-[300px]' : 'min-h-[180px]'
+          compact ? 'min-h-[80px] text-xs' : expanded ? 'min-h-[300px]' : 'min-h-[180px]'
         )}
       />
 
-      <div className="flex justify-between items-center mt-3 text-xs text-muted-foreground">
-        <span className="tabular-nums">{charCount.toLocaleString()} characters</span>
-        <span className="opacity-60">Auto-saved</span>
-      </div>
+      {!compact && (
+        <div className="flex justify-between items-center mt-3 text-xs text-muted-foreground">
+          <span className="tabular-nums">{charCount.toLocaleString()} characters</span>
+          <span className="opacity-60">Auto-saved</span>
+        </div>
+      )}
     </motion.div>
   );
 }

@@ -53,6 +53,8 @@ export function SettingsPanel() {
     setWidgetLayout,
     dragEnabled,
     setDragEnabled,
+    compactMode,
+    setCompactMode,
   } = useSettings();
 
   const [weatherSettings, setWeatherSettings] = useStorage('weatherSettings');
@@ -477,7 +479,7 @@ export function SettingsPanel() {
 
           {/* Widgets Tab */}
           <TabsContent value="widgets" className="space-y-4 mt-6">
-            <div className="mb-6">
+            <div className="space-y-3 mb-6">
               <div className="flex items-center justify-between p-4 rounded-lg bg-primary/10 border border-primary/20">
                 <div>
                   <Label className="font-medium">Enable Widget Dragging</Label>
@@ -486,6 +488,16 @@ export function SettingsPanel() {
                 <Switch
                   checked={dragEnabled}
                   onCheckedChange={setDragEnabled}
+                />
+              </div>
+              <div className="flex items-center justify-between p-4 rounded-lg bg-secondary/50 border border-border/50">
+                <div>
+                  <Label className="font-medium">Compact Mode</Label>
+                  <p className="text-xs text-muted-foreground mt-1">Smaller widgets to fit more on screen</p>
+                </div>
+                <Switch
+                  checked={compactMode}
+                  onCheckedChange={setCompactMode}
                 />
               </div>
             </div>
