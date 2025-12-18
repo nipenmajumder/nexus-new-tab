@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Circle, Plus, Trash2, ListTodo } from 'lucide-react';
+import { CheckCircle2, Circle, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -66,11 +66,8 @@ export function TodoWidget({ compact = false }: TodoWidgetProps) {
 
   return (
     <div className={compact ? 'widget-compact' : 'widget'}>
-      <div className="widget-header">
-        <div className="widget-header-left">
-          <ListTodo className="widget-header-icon" />
-          <span className="widget-title">Todos</span>
-        </div>
+      {/* Minimal header with counter */}
+      <div className="flex items-center justify-end mb-2">
         {totalCount > 0 && (
           <Badge variant="secondary" className="text-xs font-mono">
             {completedCount}/{totalCount}
@@ -99,7 +96,7 @@ export function TodoWidget({ compact = false }: TodoWidgetProps) {
 
       {/* Category pills - hidden in compact mode */}
       {!compact && (
-        <div className="flex flex-wrap gap-1.5 mb-4">
+        <div className="flex flex-wrap gap-1.5 mb-3">
           {categories.map((cat) => (
             <motion.button
               key={cat}
@@ -120,15 +117,15 @@ export function TodoWidget({ compact = false }: TodoWidgetProps) {
       )}
 
       {/* Todo list */}
-      <div className={cn("space-y-1 flex-1 overflow-y-auto pr-1", compact ? "max-h-24" : "max-h-52")}>
+      <div className={cn("space-y-1 flex-1 overflow-y-auto pr-1", compact ? "max-h-20" : "")}>
         <AnimatePresence mode="popLayout">
           {todos?.length === 0 ? (
             <motion.p 
-              className="text-sm text-muted-foreground text-center py-8"
+              className="text-sm text-muted-foreground text-center py-6"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
             >
-              No tasks yet. Add one above!
+              No tasks yet
             </motion.p>
           ) : (
             todos?.map((todo) => (
@@ -140,7 +137,7 @@ export function TodoWidget({ compact = false }: TodoWidgetProps) {
                 exit={{ opacity: 0, x: -20, scale: 0.95 }}
                 transition={{ type: 'spring', stiffness: 300, damping: 25 }}
                 className={cn(
-                  'group flex items-center gap-3 p-3 rounded-xl transition-all',
+                  'group flex items-center gap-2 p-2 rounded-lg transition-all',
                   'hover:bg-background/50',
                   todo.completed && 'opacity-60'
                 )}
@@ -152,9 +149,9 @@ export function TodoWidget({ compact = false }: TodoWidgetProps) {
                   whileTap={{ scale: 0.9 }}
                 >
                   {todo.completed ? (
-                    <CheckCircle2 className="w-5 h-5 text-primary" />
+                    <CheckCircle2 className="w-4 h-4 text-primary" />
                   ) : (
-                    <Circle className="w-5 h-5 text-muted-foreground hover:text-primary transition-colors" />
+                    <Circle className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors" />
                   )}
                 </motion.button>
                 <div className="flex-1 min-w-0">
@@ -166,10 +163,10 @@ export function TodoWidget({ compact = false }: TodoWidgetProps) {
                   >
                     {todo.text}
                   </span>
-                  {todo.category && (
+                  {todo.category && !compact && (
                     <span
                       className={cn(
-                        'text-[10px] px-2 py-0.5 rounded-full inline-block mt-1.5 border',
+                        'text-[10px] px-2 py-0.5 rounded-full inline-block mt-1 border',
                         categoryColors[todo.category]
                       )}
                     >
@@ -186,10 +183,10 @@ export function TodoWidget({ compact = false }: TodoWidgetProps) {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-7 w-7 hover:bg-destructive/10"
+                    className="h-6 w-6 hover:bg-destructive/10"
                     onClick={() => deleteTodo(todo.id)}
                   >
-                    <Trash2 className="w-4 h-4 text-destructive" />
+                    <Trash2 className="w-3 h-3 text-destructive" />
                   </Button>
                 </motion.div>
               </motion.div>

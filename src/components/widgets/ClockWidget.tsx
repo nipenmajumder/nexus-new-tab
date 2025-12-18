@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import { Clock, Plus, X, Globe } from 'lucide-react';
+import { Plus, X, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
@@ -98,61 +98,56 @@ export function ClockWidget({ compact = false }: ClockWidgetProps) {
 
   return (
     <div className={compact ? 'widget-compact' : 'widget'}>
-      <div className="widget-header">
-        <div className="widget-header-left">
-          <Clock className="widget-header-icon" />
-          <span className="widget-title">Clock</span>
-        </div>
-        {!compact && (
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5">
-              <Label className={cn("text-xs", mutedColorClass)}>24h</Label>
-              <Switch
-                checked={use24Hour}
-                onCheckedChange={toggle24Hour}
-                className="scale-75"
-              />
-            </div>
-            <Popover open={showAddPopover} onOpenChange={setShowAddPopover}>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-white/10">
-                  <Plus className="w-4 h-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-56 glass" align="end">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium mb-3">Add Timezone</p>
-                  {popularTimezones
-                    .filter((tz) => !timezones?.includes(tz.zone))
-                    .map((tz) => (
-                      <Button
-                        key={tz.zone}
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-start text-sm hover:bg-white/10"
-                        onClick={() => addTimezone(tz)}
-                      >
-                        <Globe className="w-3 h-3 mr-2" />
-                        {tz.label}
-                      </Button>
-                    ))}
-                </div>
-              </PopoverContent>
-            </Popover>
+      {/* Controls - minimal header */}
+      {!compact && (
+        <div className="flex items-center justify-end gap-2 mb-2">
+          <div className="flex items-center gap-1.5">
+            <Label className={cn("text-xs", mutedColorClass)}>24h</Label>
+            <Switch
+              checked={use24Hour}
+              onCheckedChange={toggle24Hour}
+              className="scale-75"
+            />
           </div>
-        )}
-      </div>
+          <Popover open={showAddPopover} onOpenChange={setShowAddPopover}>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-white/10">
+                <Plus className="w-3 h-3" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 glass" align="end">
+              <div className="space-y-2">
+                <p className="text-sm font-medium mb-3">Add Timezone</p>
+                {popularTimezones
+                  .filter((tz) => !timezones?.includes(tz.zone))
+                  .map((tz) => (
+                    <Button
+                      key={tz.zone}
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start text-sm hover:bg-white/10"
+                      onClick={() => addTimezone(tz)}
+                    >
+                      <Globe className="w-3 h-3 mr-2" />
+                      {tz.label}
+                    </Button>
+                  ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+      )}
 
       {/* Main local time */}
       <div className={cn(
         "flex-1 flex flex-col items-center justify-center text-center",
-        compact ? "py-1" : "py-4"
+        compact ? "py-1" : "py-2"
       )}>
         <motion.div 
           className={cn(
             "font-heading font-bold tracking-tight",
             textColorClass,
-            compact ? "text-3xl" : "text-6xl"
+            compact ? "text-3xl" : "text-5xl"
           )}
           key={formatTime(time)}
           initial={{ opacity: 0.8, scale: 0.98 }}
@@ -168,7 +163,7 @@ export function ClockWidget({ compact = false }: ClockWidgetProps) {
         )}
         {!compact && (
           <motion.div 
-            className={cn("text-2xl font-light tabular-nums", mutedColorClass)}
+            className={cn("text-xl font-light tabular-nums", mutedColorClass)}
             key={format(time, 'ss')}
             initial={{ opacity: 0.5 }}
             animate={{ opacity: 0.7 }}
@@ -179,7 +174,7 @@ export function ClockWidget({ compact = false }: ClockWidgetProps) {
         <div className={cn(
           "tracking-wide mt-2",
           mutedColorClass,
-          compact ? "text-xs" : "text-sm mt-3"
+          compact ? "text-xs" : "text-sm"
         )}>
           {format(time, compact ? 'EEE, MMM d' : 'EEEE, MMMM d, yyyy')}
         </div>
@@ -191,7 +186,7 @@ export function ClockWidget({ compact = false }: ClockWidgetProps) {
           {timezones && timezones.filter((tz) => tz !== 'local').length > 0 && (
             <motion.div 
               className={cn(
-                "border-t pt-4 mt-4 space-y-2",
+                "border-t pt-3 mt-2 space-y-1 overflow-y-auto max-h-20",
                 useLightText ? "border-white/20" : "border-border"
               )}
               initial={{ opacity: 0, height: 0 }}
@@ -210,7 +205,7 @@ export function ClockWidget({ compact = false }: ClockWidgetProps) {
                   >
                     <span className={mutedColorClass}>{getTimezoneLabel(zone)}</span>
                     <div className="flex items-center gap-2">
-                      <span className={cn("font-mono tabular-nums", textColorClass)}>
+                      <span className={cn("font-mono tabular-nums text-xs", textColorClass)}>
                         {getTimeInTimezone(zone)}
                       </span>
                       <Button

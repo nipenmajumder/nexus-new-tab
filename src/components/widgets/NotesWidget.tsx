@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { StickyNote, Maximize2, Minimize2, Check } from 'lucide-react';
+import { Maximize2, Minimize2, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useStorage } from '@/hooks/useStorage';
@@ -62,60 +62,57 @@ export function NotesWidget({ compact = false }: NotesWidgetProps) {
       layout
       transition={{ type: 'spring', stiffness: 200, damping: 25 }}
     >
-      <div className="widget-header">
-        <div className="widget-header-left">
-          <StickyNote className="widget-header-icon" />
-          <span className="widget-title">Quick Notes</span>
-          {isSaving && (
-            <motion.span 
-              className="text-xs text-muted-foreground ml-2"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-            >
-              Saving...
-            </motion.span>
-          )}
-          {justSaved && !isSaving && (
-            <motion.span 
-              className="text-xs text-green-400 ml-2 flex items-center gap-1"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0 }}
-            >
-              <Check className="w-3 h-3" />
-              Saved
-            </motion.span>
-          )}
-        </div>
+      {/* Minimal header with status */}
+      <div className="flex items-center justify-end gap-2 mb-2">
+        {isSaving && (
+          <motion.span 
+            className="text-xs text-muted-foreground"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            Saving...
+          </motion.span>
+        )}
+        {justSaved && !isSaving && (
+          <motion.span 
+            className="text-xs text-green-400 flex items-center gap-1"
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0 }}
+          >
+            <Check className="w-3 h-3" />
+            Saved
+          </motion.span>
+        )}
         {!compact && (
           <Button
             variant="ghost"
             size="icon"
-            className="h-7 w-7 hover:bg-white/10"
+            className="h-6 w-6 hover:bg-white/10"
             onClick={() => setExpanded(!expanded)}
           >
             {expanded ? (
-              <Minimize2 className="w-4 h-4" />
+              <Minimize2 className="w-3 h-3" />
             ) : (
-              <Maximize2 className="w-4 h-4" />
+              <Maximize2 className="w-3 h-3" />
             )}
           </Button>
         )}
       </div>
 
       <Textarea
-        placeholder="Write your thoughts here..."
+        placeholder="Write your thoughts..."
         value={localNotes}
         onChange={handleChange}
         className={cn(
           'resize-none bg-background/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/30 font-body flex-1 transition-all',
-          compact ? 'min-h-[80px] text-xs' : expanded ? 'min-h-[300px]' : 'min-h-[180px]'
+          compact ? 'min-h-[100px] text-xs' : expanded ? 'min-h-[200px]' : 'min-h-[160px]'
         )}
       />
 
       {!compact && (
-        <div className="flex justify-between items-center mt-3 text-xs text-muted-foreground">
-          <span className="tabular-nums">{charCount.toLocaleString()} characters</span>
+        <div className="flex justify-between items-center mt-2 text-xs text-muted-foreground">
+          <span className="tabular-nums">{charCount.toLocaleString()} chars</span>
           <span className="opacity-60">Auto-saved</span>
         </div>
       )}

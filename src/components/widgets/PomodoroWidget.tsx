@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Timer, Play, Pause, RotateCcw, Settings, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, RotateCcw, Settings, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Slider } from '@/components/ui/slider';
@@ -127,7 +127,7 @@ export function PomodoroWidget({ compact = false }: PomodoroWidgetProps) {
   };
 
   const progress = ((getDuration() - timeLeft) / getDuration()) * 100;
-  const circumference = 2 * Math.PI * 50;
+  const circumference = 2 * Math.PI * 45;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   const textColorClass = useLightText ? 'text-white' : 'text-foreground';
@@ -140,90 +140,85 @@ export function PomodoroWidget({ compact = false }: PomodoroWidgetProps) {
   };
 
   const modeLabels = {
-    work: 'Focus Time',
-    break: 'Short Break',
+    work: 'Focus',
+    break: 'Break',
     longBreak: 'Long Break',
   };
 
   return (
     <div className={compact ? 'widget-compact' : 'widget'}>
-      <div className="widget-header">
-        <div className="widget-header-left">
-          <Timer className="widget-header-icon" />
-          <span className="widget-title">Pomodoro</span>
-        </div>
-        {!compact && (
-          <div className="flex items-center gap-1">
-            <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-white/10" onClick={toggleSound}>
-              {settings?.soundEnabled ? (
-                <Volume2 className="w-4 h-4" />
-              ) : (
-                <VolumeX className="w-4 h-4 text-muted-foreground" />
-              )}
-            </Button>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 hover:bg-white/10">
-                  <Settings className="w-4 h-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64 glass" align="end">
-                <div className="space-y-5">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Work: {settings?.workDuration || 25}m</label>
-                    <Slider
-                      value={[settings?.workDuration || 25]}
-                      onValueChange={async ([value]) => {
-                        if (settings) {
-                          await setSettings({ ...settings, workDuration: value });
-                          if (mode === 'work' && !isRunning) {
-                            setTimeLeft(value * 60);
-                          }
+      {/* Minimal controls */}
+      {!compact && (
+        <div className="flex items-center justify-end gap-1 mb-2">
+          <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-white/10" onClick={toggleSound}>
+            {settings?.soundEnabled ? (
+              <Volume2 className="w-3 h-3" />
+            ) : (
+              <VolumeX className="w-3 h-3 text-muted-foreground" />
+            )}
+          </Button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-white/10">
+                <Settings className="w-3 h-3" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 glass" align="end">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Work: {settings?.workDuration || 25}m</label>
+                  <Slider
+                    value={[settings?.workDuration || 25]}
+                    onValueChange={async ([value]) => {
+                      if (settings) {
+                        await setSettings({ ...settings, workDuration: value });
+                        if (mode === 'work' && !isRunning) {
+                          setTimeLeft(value * 60);
                         }
-                      }}
-                      min={5}
-                      max={60}
-                      step={5}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Break: {settings?.breakDuration || 5}m</label>
-                    <Slider
-                      value={[settings?.breakDuration || 5]}
-                      onValueChange={async ([value]) => {
-                        if (settings) {
-                          await setSettings({ ...settings, breakDuration: value });
-                        }
-                      }}
-                      min={1}
-                      max={15}
-                      step={1}
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Long Break: {settings?.longBreakDuration || 15}m</label>
-                    <Slider
-                      value={[settings?.longBreakDuration || 15]}
-                      onValueChange={async ([value]) => {
-                        if (settings) {
-                          await setSettings({ ...settings, longBreakDuration: value });
-                        }
-                      }}
-                      min={10}
-                      max={30}
-                      step={5}
-                    />
-                  </div>
+                      }
+                    }}
+                    min={5}
+                    max={60}
+                    step={5}
+                  />
                 </div>
-              </PopoverContent>
-            </Popover>
-          </div>
-        )}
-      </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Break: {settings?.breakDuration || 5}m</label>
+                  <Slider
+                    value={[settings?.breakDuration || 5]}
+                    onValueChange={async ([value]) => {
+                      if (settings) {
+                        await setSettings({ ...settings, breakDuration: value });
+                      }
+                    }}
+                    min={1}
+                    max={15}
+                    step={1}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Long Break: {settings?.longBreakDuration || 15}m</label>
+                  <Slider
+                    value={[settings?.longBreakDuration || 15]}
+                    onValueChange={async ([value]) => {
+                      if (settings) {
+                        await setSettings({ ...settings, longBreakDuration: value });
+                      }
+                    }}
+                    min={10}
+                    max={30}
+                    step={5}
+                  />
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+      )}
 
       {/* Mode indicator */}
       <motion.div 
-        className={cn("text-center", compact ? "mb-1" : "mb-3")}
+        className={cn("text-center", compact ? "mb-1" : "mb-2")}
         key={mode}
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -239,22 +234,22 @@ export function PomodoroWidget({ compact = false }: PomodoroWidgetProps) {
       </motion.div>
 
       {/* Timer display with progress ring */}
-      <div className={cn("relative flex items-center justify-center flex-1", compact ? "mb-2" : "mb-5")}>
-        <svg className={compact ? "w-20 h-20 -rotate-90" : "w-36 h-36 -rotate-90"}>
+      <div className={cn("relative flex items-center justify-center flex-1", compact ? "mb-2" : "mb-3")}>
+        <svg className={compact ? "w-20 h-20 -rotate-90" : "w-32 h-32 -rotate-90"}>
           <circle
-            cx={compact ? "40" : "72"}
-            cy={compact ? "40" : "72"}
-            r={compact ? "30" : "50"}
+            cx={compact ? "40" : "64"}
+            cy={compact ? "40" : "64"}
+            r={compact ? "30" : "45"}
             stroke="currentColor"
-            strokeWidth={compact ? "4" : "6"}
+            strokeWidth={compact ? "4" : "5"}
             fill="none"
             className="text-muted/20"
           />
           <motion.circle
-            cx={compact ? "40" : "72"}
-            cy={compact ? "40" : "72"}
-            r={compact ? "30" : "50"}
-            strokeWidth={compact ? "4" : "6"}
+            cx={compact ? "40" : "64"}
+            cy={compact ? "40" : "64"}
+            r={compact ? "30" : "45"}
+            strokeWidth={compact ? "4" : "5"}
             fill="none"
             strokeLinecap="round"
             className={cn('transition-colors duration-300', modeConfig[mode].stroke)}
@@ -271,7 +266,7 @@ export function PomodoroWidget({ compact = false }: PomodoroWidgetProps) {
           className={cn(
             'absolute font-mono font-bold tabular-nums',
             textColorClass,
-            compact ? "text-lg" : "text-4xl"
+            compact ? "text-lg" : "text-3xl"
           )}
           key={formatTime(timeLeft)}
           initial={{ scale: 0.95, opacity: 0.8 }}
@@ -283,13 +278,13 @@ export function PomodoroWidget({ compact = false }: PomodoroWidgetProps) {
       </div>
 
       {/* Controls */}
-      <div className={cn("flex justify-center gap-2", compact ? "" : "mb-4")}>
+      <div className={cn("flex justify-center gap-2", compact ? "" : "mb-3")}>
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Button
             variant="outline"
             size="icon"
             onClick={resetTimer}
-            className={compact ? "h-8 w-8 rounded-full" : "h-11 w-11 rounded-full"}
+            className={compact ? "h-8 w-8 rounded-full" : "h-10 w-10 rounded-full"}
           >
             <RotateCcw className={compact ? "w-3 h-3" : "w-4 h-4"} />
           </Button>
@@ -301,13 +296,13 @@ export function PomodoroWidget({ compact = false }: PomodoroWidgetProps) {
             className={cn(
               'rounded-full transition-shadow',
               isRunning && 'animate-glow-pulse',
-              compact ? "h-8 w-8" : "h-11 w-11"
+              compact ? "h-8 w-8" : "h-10 w-10"
             )}
           >
             {isRunning ? (
-              <Pause className={compact ? "w-3 h-3" : "w-5 h-5"} />
+              <Pause className={compact ? "w-3 h-3" : "w-4 h-4"} />
             ) : (
-              <Play className={cn(compact ? "w-3 h-3" : "w-5 h-5", "ml-0.5")} />
+              <Play className={cn(compact ? "w-3 h-3" : "w-4 h-4", "ml-0.5")} />
             )}
           </Button>
         </motion.div>
@@ -315,9 +310,9 @@ export function PomodoroWidget({ compact = false }: PomodoroWidgetProps) {
 
       {/* Stats - hidden in compact mode */}
       {!compact && (
-        <div className={cn("text-center text-sm", mutedColorClass)}>
+        <div className={cn("text-center text-xs", mutedColorClass)}>
           <span>Today: <strong className={textColorClass}>{stats?.todaySessions || 0}</strong></span>
-          <span className="mx-3 opacity-50">•</span>
+          <span className="mx-2 opacity-50">•</span>
           <span>Total: <strong className={textColorClass}>{stats?.totalSessions || 0}</strong></span>
         </div>
       )}
