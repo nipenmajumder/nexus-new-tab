@@ -14,6 +14,11 @@
     /* Font sizes */
     --font-scale: 1;
     
+    /* Letter spacing adjustments */
+    --letter-spacing-tight: -0.02em;
+    --letter-spacing-normal: 0;
+    --letter-spacing-wide: 0.02em;
+    
     /* Core colors - Light mode */
     --background: 220 20% 97%;
     --foreground: 220 20% 10%;
@@ -59,6 +64,8 @@
     /* Widget specific */
     --widget-bg: 0 0% 100% / 0.6;
     --widget-border: 0 0% 100% / 0.4;
+    --widget-height: 280px;
+    --widget-height-compact: 180px;
     
     /* Shadows */
     --shadow-sm: 0 2px 8px hsl(var(--glass-shadow));
@@ -139,6 +146,7 @@
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-body);
     font-size: calc(1rem * var(--font-scale));
+    letter-spacing: var(--letter-spacing-normal);
   }
   
   h1, h2, h3, h4, h5, h6 {
@@ -151,8 +159,8 @@
   
   /* Smooth scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 4px;
+    height: 4px;
   }
   
   ::-webkit-scrollbar-track {
@@ -161,7 +169,7 @@
   
   ::-webkit-scrollbar-thumb {
     background: hsl(var(--muted-foreground) / 0.3);
-    border-radius: 3px;
+    border-radius: 2px;
   }
   
   ::-webkit-scrollbar-thumb:hover {
@@ -188,16 +196,21 @@
   }
   
   .widget {
-    @apply glass-card p-5 transition-all duration-300;
-    height: 320px;
+    @apply glass-card p-4 transition-all duration-300;
+    height: 100%;
+    min-height: var(--widget-height);
+    max-height: var(--widget-height);
     display: flex;
     flex-direction: column;
     position: relative;
+    overflow: hidden;
   }
 
   .widget-compact {
     @apply glass-card p-3 transition-all duration-300;
-    height: 200px;
+    height: 100%;
+    min-height: var(--widget-height-compact);
+    max-height: var(--widget-height-compact);
     display: flex;
     flex-direction: column;
     position: relative;
@@ -221,12 +234,12 @@
   }
   
   .widget:hover {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     box-shadow: var(--shadow-xl);
   }
   
   .widget-header {
-    @apply flex items-center justify-between mb-4;
+    @apply flex items-center justify-between mb-3;
   }
   
   .widget-header-left {
@@ -242,7 +255,7 @@
   }
   
   .widget-title {
-    @apply text-sm font-medium tracking-wide;
+    @apply text-xs font-medium tracking-wide;
   }
   
   .gradient-text {

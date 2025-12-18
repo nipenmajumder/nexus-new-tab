@@ -11,7 +11,6 @@ import { NotesWidget } from '@/components/widgets/NotesWidget';
 import { QuickLinksWidget } from '@/components/widgets/QuickLinksWidget';
 import { GoogleAppsWidget } from '@/components/widgets/GoogleAppsWidget';
 import { AIToolsWidget } from '@/components/widgets/AIToolsWidget';
-import { SearchWidget } from '@/components/widgets/SearchWidget';
 import { QuoteWidget } from '@/components/widgets/QuoteWidget';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -68,42 +67,56 @@ function DashboardContent() {
 
   const shouldShowSkeleton = isLoading || !minLoadingComplete;
 
+  // Get enabled widgets for skeleton display
+  const getEnabledWidgetCount = () => {
+    if (!widgetLayout) return 6;
+    return Object.entries(widgetLayout)
+      .filter(([key, config]) => config.visible && key !== 'quickLinks' && key !== 'search')
+      .length;
+  };
+
   if (shouldShowSkeleton) {
+    const enabledCount = getEnabledWidgetCount();
     return (
       <motion.div 
-        className="min-h-screen p-6 md:p-8 lg:p-12"
+        className="min-h-screen p-4 md:p-6 lg:p-8"
         initial={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
       >
         {/* Header Skeleton */}
-        <header className="mb-8 text-center">
+        <header className="mb-6 text-center">
           <Skeleton className="h-8 w-32 mx-auto mb-2 bg-white/20" />
           <Skeleton className="h-4 w-64 mx-auto bg-white/20" />
         </header>
 
-        {/* Search Skeleton */}
-        <div className="max-w-3xl mx-auto mb-8">
-          <Skeleton className="h-20 w-full rounded-2xl bg-white/20" />
-        </div>
-
-        {/* Quick Links Skeleton */}
-        <div className="max-w-2xl mx-auto mb-12">
-          <div className="flex flex-wrap justify-center gap-6">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="flex flex-col items-center gap-2">
-                <Skeleton className="w-14 h-14 rounded-full bg-white/20" />
-                <Skeleton className="h-3 w-16 bg-white/20" />
-              </div>
-            ))}
+        {/* Quick Links Skeleton - only if enabled */}
+        {widgetLayout?.quickLinks?.visible !== false && (
+          <div className="max-w-2xl mx-auto mb-8">
+            <div className="flex flex-wrap justify-center gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="flex flex-col items-center gap-2">
+                  <Skeleton className="w-14 h-14 rounded-full bg-white/20" />
+                  <Skeleton className="h-3 w-16 bg-white/20" />
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* Widget Grid Skeleton */}
+        {/* Widget Grid Skeleton - only for enabled widgets */}
         <main className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <Skeleton key={i} className="h-80 rounded-2xl bg-white/20" />
+          <div className={cn(
+            "grid gap-4",
+            compactMode 
+              ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4" 
+              : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+          )}>
+            {[...Array(Math.min(enabledCount, 6))].map((_, i) => (
+              <Skeleton key={i} className={cn(
+                "rounded-2xl bg-white/20",
+                compactMode ? "h-[180px]" : "h-[280px]"
+              )} />
             ))}
           </div>
         </main>
@@ -131,7 +144,6 @@ function DashboardContent() {
     });
 
   const showQuickLinks = widgetLayout?.quickLinks?.visible !== false;
-  const showSearch = widgetLayout?.search?.visible !== false;
   const textColorClass = useLightText ? 'text-white' : 'text-foreground';
   const mutedColorClass = useLightText ? 'text-white/60' : 'text-muted-foreground';
 
@@ -185,65 +197,50 @@ function DashboardContent() {
     <AnimatePresence mode="wait">
       {showContent && (
         <motion.div 
-          className="min-h-screen p-6 md:p-8 lg:p-12"
+          className="h-screen overflow-hidden flex flex-col p-4 md:p-6 lg:p-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
           {/* Header */}
           <motion.header 
-            className="mb-8 text-center"
+            className="mb-4 text-center shrink-0"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.5 }}
           >
             <h1 className={cn(
-              "text-3xl font-heading font-bold mb-1 tracking-tight",
+              "text-2xl font-heading font-bold tracking-tight",
               textColorClass
             )}>
               <span className="gradient-text">Nexus</span> Tab
             </h1>
-            <p className={cn("text-sm font-light tracking-wide", mutedColorClass)}>
-              Your personalized new tab experience
-            </p>
           </motion.header>
-
-          {/* Search Widget - Prominent placement */}
-          {showSearch && (
-            <motion.div 
-              className="max-w-3xl mx-auto mb-10"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.5 }}
-            >
-              <SearchWidget />
-            </motion.div>
-          )}
 
           {/* Quick Links - Chrome style centered */}
           {showQuickLinks && (
             <motion.div 
-              className="max-w-3xl mx-auto mb-14"
+              className="max-w-3xl mx-auto mb-6 shrink-0"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
             >
               <QuickLinksWidget />
             </motion.div>
           )}
 
-          {/* Widget Grid with Drag & Drop */}
+          {/* Widget Grid with Drag & Drop - fills remaining space */}
           <motion.main 
-            className="max-w-7xl mx-auto"
+            className="max-w-7xl mx-auto w-full flex-1 min-h-0"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
           >
             <div className={cn(
-              "grid gap-4",
+              "grid gap-3 h-full auto-rows-fr",
               compactMode 
                 ? "grid-cols-2 md:grid-cols-3 lg:grid-cols-4" 
-                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                : "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
             )}>
               {sortedWidgets.map(({ key, component: Component }) => (
                 <motion.div
@@ -265,14 +262,13 @@ function DashboardContent() {
                   {/* Drag Handle */}
                   {dragEnabled && (
                     <div className={cn(
-                      "absolute -top-3 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 transition-all duration-300",
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-md",
+                      "absolute -top-2 left-1/2 -translate-x-1/2 z-10 opacity-0 group-hover:opacity-100 transition-all duration-300",
+                      "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium backdrop-blur-md",
                       useLightText 
                         ? "bg-white/20 text-white border border-white/20" 
                         : "bg-foreground/10 text-foreground border border-foreground/10"
                     )}>
                       <GripVertical className="w-3 h-3" />
-                      <span>Drag</span>
                     </div>
                   )}
                   <Component compact={compactMode} />
@@ -280,24 +276,6 @@ function DashboardContent() {
               ))}
             </div>
           </motion.main>
-
-          {/* Footer */}
-          <motion.footer 
-            className={cn("fixed bottom-6 left-6 text-xs", mutedColorClass)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-          >
-            <kbd className={cn(
-              "px-2 py-1 rounded-md mr-1 font-mono text-[10px]",
-              useLightText ? "bg-white/20 border border-white/20" : "bg-foreground/10 border border-foreground/10"
-            )}>Ctrl</kbd>+
-            <kbd className={cn(
-              "px-2 py-1 rounded-md mx-1 font-mono text-[10px]",
-              useLightText ? "bg-white/20 border border-white/20" : "bg-foreground/10 border border-foreground/10"
-            )}>K</kbd>
-            Search
-          </motion.footer>
         </motion.div>
       )}
     </AnimatePresence>

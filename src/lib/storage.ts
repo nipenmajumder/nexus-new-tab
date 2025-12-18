@@ -26,6 +26,7 @@ export interface StorageData {
   theme: 'light' | 'dark' | 'system';
   clockSettings: ClockSettings;
   googleApps: GoogleApp[];
+  googleAppsPage: number;
   aiTools: AITool[];
   quoteCache: QuoteData;
   dragEnabled: boolean;
@@ -95,7 +96,6 @@ export interface WidgetLayout {
   quickLinks: { visible: boolean; order: number };
   googleApps: { visible: boolean; order: number };
   aiTools: { visible: boolean; order: number };
-  search: { visible: boolean; order: number };
   quote: { visible: boolean; order: number };
 }
 
@@ -181,8 +181,7 @@ const defaultData: StorageData = {
     quickLinks: { visible: true, order: 5 },
     googleApps: { visible: true, order: 6 },
     aiTools: { visible: true, order: 7 },
-    search: { visible: true, order: 8 },
-    quote: { visible: true, order: 9 },
+    quote: { visible: true, order: 8 },
   },
   backgroundSettings: {
     type: 'gradient',
@@ -224,6 +223,7 @@ const defaultData: StorageData = {
     { id: '7', name: 'Sheets', url: 'https://sheets.google.com', icon: 'https://ssl.gstatic.com/docs/spreadsheets/favicon3.ico', order: 6 },
     { id: '8', name: 'Meet', url: 'https://meet.google.com', icon: 'https://fonts.gstatic.com/s/i/productlogos/meet_2020q4/v6/web-48dp/logo_meet_2020q4_color_1x_web_48dp.png', order: 7 },
   ],
+  googleAppsPage: 0,
   aiTools: [
     { id: '1', name: 'ChatGPT', url: 'https://chat.openai.com', icon: 'https://chat.openai.com/favicon.ico', color: '#10a37f', order: 0 },
     { id: '2', name: 'Claude', url: 'https://claude.ai', icon: 'https://claude.ai/favicon.ico', color: '#d97757', order: 1 },
