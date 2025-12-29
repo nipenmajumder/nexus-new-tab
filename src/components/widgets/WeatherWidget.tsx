@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 
 interface WeatherData {
   temp: number;
+  feelsLike: number;
   description: string;
   icon: string;
   humidity: number;
@@ -124,6 +125,7 @@ export function WeatherWidget() {
 
       const weatherData = {
         temp: Math.round(currentData.main.temp),
+        feelsLike: Math.round(currentData.main.feels_like),
         description: currentData.weather[0].description,
         icon: currentData.weather[0].icon,
         humidity: currentData.main.humidity,
@@ -364,6 +366,9 @@ export function WeatherWidget() {
               </div>
               <p className="text-sm text-muted-foreground capitalize">
                 {weather.description}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Feels like {weather.feelsLike}°
               </p>
             </div>
             <div>{getWeatherIcon(weather.icon)}</div>
