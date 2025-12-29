@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { format } from 'date-fns';
-import { Plus, X, Globe } from 'lucide-react';
+import { Clock, Plus, X, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Switch } from '@/components/ui/switch';
@@ -25,11 +24,7 @@ const popularTimezones = [
   { zone: 'Australia/Sydney', label: 'Sydney' },
 ];
 
-interface ClockWidgetProps {
-  compact?: boolean;
-}
-
-export function ClockWidget({ compact = false }: ClockWidgetProps) {
+export function ClockWidget() {
   const [time, setTime] = useState(new Date());
   const [timezones, setTimezones] = useStorage('timezones');
   const [showAddPopover, setShowAddPopover] = useState(false);
@@ -93,14 +88,17 @@ export function ClockWidget({ compact = false }: ClockWidgetProps) {
     }
   };
 
-  const textColorClass = useLightText ? 'text-white' : 'text-foreground';
-  const mutedColorClass = useLightText ? 'text-white/70' : 'text-muted-foreground';
+  const textColorClass = useLightText ? 'text-white' : 'text-gray-900';
+  const mutedColorClass = useLightText ? 'text-white/70' : 'text-gray-600';
 
   return (
-    <div className={compact ? 'widget-compact' : 'widget'}>
-      {/* Controls - minimal header */}
-      {!compact && (
-        <div className="flex items-center justify-end gap-2 mb-2">
+    <div className="widget animate-fade-in">
+      <div className="flex items-center justify-between mb-4">
+        <div className={cn("flex items-center gap-2", mutedColorClass)}>
+          <Clock className="w-4 h-4" />
+          <span className="text-sm font-medium">Clock</span>
+        </div>
+        <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5">
             <Label className={cn("text-xs", mutedColorClass)}>24h</Label>
             <Switch
@@ -111,13 +109,13 @@ export function ClockWidget({ compact = false }: ClockWidgetProps) {
           </div>
           <Popover open={showAddPopover} onOpenChange={setShowAddPopover}>
             <PopoverTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-6 w-6 hover:bg-white/10">
-                <Plus className="w-3 h-3" />
+              <Button variant="ghost" size="icon" className="h-7 w-7">
+                <Plus className="w-4 h-4" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-56 glass" align="end">
               <div className="space-y-2">
-                <p className="text-sm font-medium mb-3">Add Timezone</p>
+                <p className="text-sm font-medium mb-2">Add Timezone</p>
                 {popularTimezones
                   .filter((tz) => !timezones?.includes(tz.zone))
                   .map((tz) => (
@@ -125,7 +123,7 @@ export function ClockWidget({ compact = false }: ClockWidgetProps) {
                       key={tz.zone}
                       variant="ghost"
                       size="sm"
-                      className="w-full justify-start text-sm hover:bg-white/10"
+                      className="w-full justify-start text-sm"
                       onClick={() => addTimezone(tz)}
                     >
                       <Globe className="w-3 h-3 mr-2" />
@@ -136,92 +134,51 @@ export function ClockWidget({ compact = false }: ClockWidgetProps) {
             </PopoverContent>
           </Popover>
         </div>
-      )}
+      </div>
 
       {/* Main local time */}
-      <div className={cn(
-        "flex-1 flex flex-col items-center justify-center text-center",
-        compact ? "py-1" : "py-2"
-      )}>
-        <motion.div 
-          className={cn(
-            "font-heading font-bold tracking-tight",
-            textColorClass,
-            compact ? "text-3xl" : "text-5xl"
-          )}
-          key={formatTime(time)}
-          initial={{ opacity: 0.8, scale: 0.98 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.2 }}
-        >
+      <div className="flex-1 flex flex-col items-center justify-center text-center py-4">
+        <div className={cn("text-6xl font-heading font-bold tracking-tight", textColorClass)}>
           {formatTime(time)}
-        </motion.div>
-        {!use24Hour && !compact && (
-          <div className={cn("text-lg font-medium mt-1", mutedColorClass)}>
+        </div>
+        {!use24Hour && (
+          <div className={cn("text-lg font-medium", mutedColorClass)}>
             {format(time, 'a')}
           </div>
         )}
-        {!compact && (
-          <motion.div 
-            className={cn("text-xl font-light tabular-nums", mutedColorClass)}
-            key={format(time, 'ss')}
-            initial={{ opacity: 0.5 }}
-            animate={{ opacity: 0.7 }}
-          >
-            :{format(time, 'ss')}
-          </motion.div>
-        )}
-        <div className={cn(
-          "tracking-wide mt-2",
-          mutedColorClass,
-          compact ? "text-xs" : "text-sm"
-        )}>
-          {format(time, compact ? 'EEE, MMM d' : 'EEEE, MMMM d, yyyy')}
+        <div className={cn("text-2xl font-light", mutedColorClass)}>
+          {format(time, 'ss')}
+        </div>
+        <div className={cn("text-sm mt-2", mutedColorClass)}>
+          {format(time, 'EEEE, MMMM d, yyyy')}
         </div>
       </div>
 
-      {/* Additional timezones - hidden in compact mode */}
-      {!compact && (
-        <AnimatePresence>
-          {timezones && timezones.filter((tz) => tz !== 'local').length > 0 && (
-            <motion.div 
-              className={cn(
-                "border-t pt-3 mt-2 space-y-1 overflow-y-auto max-h-20",
-                useLightText ? "border-white/20" : "border-border"
-              )}
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-            >
-              {timezones
-                .filter((tz) => tz !== 'local')
-                .map((zone) => (
-                  <motion.div
-                    key={zone}
-                    className="flex items-center justify-between text-sm group"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
+      {/* Additional timezones */}
+      {timezones && timezones.filter((tz) => tz !== 'local').length > 0 && (
+        <div className="border-t border-white/20 pt-3 mt-3 space-y-2">
+          {timezones
+            .filter((tz) => tz !== 'local')
+            .map((zone) => (
+              <div
+                key={zone}
+                className="flex items-center justify-between text-sm"
+              >
+                <span className={mutedColorClass}>{getTimezoneLabel(zone)}</span>
+                <div className="flex items-center gap-2">
+                  <span className={cn("font-mono", textColorClass)}>{getTimeInTimezone(zone)}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5 opacity-50 hover:opacity-100"
+                    onClick={() => removeTimezone(zone)}
                   >
-                    <span className={mutedColorClass}>{getTimezoneLabel(zone)}</span>
-                    <div className="flex items-center gap-2">
-                      <span className={cn("font-mono tabular-nums text-xs", textColorClass)}>
-                        {getTimeInTimezone(zone)}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => removeTimezone(zone)}
-                      >
-                        <X className="w-3 h-3" />
-                      </Button>
-                    </div>
-                  </motion.div>
-                ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+        </div>
       )}
     </div>
   );

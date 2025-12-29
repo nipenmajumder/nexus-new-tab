@@ -26,11 +26,11 @@ export interface StorageData {
   theme: 'light' | 'dark' | 'system';
   clockSettings: ClockSettings;
   googleApps: GoogleApp[];
-  googleAppsPage: number;
   aiTools: AITool[];
+  musicServices: MusicService[];
+  defaultMusicService: 'spotify' | 'youtube';
   quoteCache: QuoteData;
   dragEnabled: boolean;
-  compactMode: boolean;
 }
 
 export interface Todo {
@@ -72,6 +72,14 @@ export interface AITool {
   order: number;
 }
 
+export interface MusicService {
+  name: 'spotify' | 'youtube';
+  links: Array<{
+    id: string;
+    title: string;
+    url: string;
+  }>;
+}
 
 export interface PomodoroSettings {
   workDuration: number;
@@ -96,6 +104,8 @@ export interface WidgetLayout {
   quickLinks: { visible: boolean; order: number };
   googleApps: { visible: boolean; order: number };
   aiTools: { visible: boolean; order: number };
+  music: { visible: boolean; order: number };
+  search: { visible: boolean; order: number };
   quote: { visible: boolean; order: number };
 }
 
@@ -181,7 +191,9 @@ const defaultData: StorageData = {
     quickLinks: { visible: true, order: 5 },
     googleApps: { visible: true, order: 6 },
     aiTools: { visible: true, order: 7 },
-    quote: { visible: true, order: 8 },
+    music: { visible: true, order: 8 },
+    search: { visible: true, order: 9 },
+    quote: { visible: true, order: 10 },
   },
   backgroundSettings: {
     type: 'gradient',
@@ -223,7 +235,6 @@ const defaultData: StorageData = {
     { id: '7', name: 'Sheets', url: 'https://sheets.google.com', icon: 'https://ssl.gstatic.com/docs/spreadsheets/favicon3.ico', order: 6 },
     { id: '8', name: 'Meet', url: 'https://meet.google.com', icon: 'https://fonts.gstatic.com/s/i/productlogos/meet_2020q4/v6/web-48dp/logo_meet_2020q4_color_1x_web_48dp.png', order: 7 },
   ],
-  googleAppsPage: 0,
   aiTools: [
     { id: '1', name: 'ChatGPT', url: 'https://chat.openai.com', icon: 'https://chat.openai.com/favicon.ico', color: '#10a37f', order: 0 },
     { id: '2', name: 'Claude', url: 'https://claude.ai', icon: 'https://claude.ai/favicon.ico', color: '#d97757', order: 1 },
@@ -232,13 +243,28 @@ const defaultData: StorageData = {
     { id: '5', name: 'Midjourney', url: 'https://www.midjourney.com', icon: 'https://www.midjourney.com/favicon.ico', color: '#000000', order: 4 },
     { id: '6', name: 'HuggingFace', url: 'https://huggingface.co', icon: 'https://huggingface.co/favicon.ico', color: '#ff9d00', order: 5 },
   ],
-  quoteCache: {
-    quote: '',
-    author: '',
-    fetchedAt: 0,
-  },
+  musicServices: [
+    {
+      name: 'spotify',
+      links: [
+        { id: '1', title: 'Home', url: 'https://open.spotify.com' },
+        { id: '2', title: 'Search', url: 'https://open.spotify.com/search' },
+        { id: '3', title: 'Your Library', url: 'https://open.spotify.com/collection' },
+        { id: '4', title: 'Liked Songs', url: 'https://open.spotify.com/collection/tracks' },
+      ],
+    },
+    {
+      name: 'youtube',
+      links: [
+        { id: '1', title: 'Home', url: 'https://music.youtube.com' },
+        { id: '2', title: 'Explore', url: 'https://music.youtube.com/explore' },
+        { id: '3', title: 'Library', url: 'https://music.youtube.com/library' },
+        { id: '4', title: 'Liked Music', url: 'https://music.youtube.com/playlist?list=LM' },
+      ],
+    },
+  ],
+  defaultMusicService: 'spotify',
   dragEnabled: true,
-  compactMode: false,
 };
 
 // Check if chrome.storage is available
@@ -303,9 +329,9 @@ export async function getAllStorageData(): Promise<StorageData> {
     const stored = localStorage.getItem(`nexus_${key}`);
     if (stored) {
       try {
-        (data as Record<string, unknown>)[key] = JSON.parse(stored);
+        data[key] = JSON.parse(stored);
       } catch {
-        (data as Record<string, unknown>)[key] = defaultData[key];
+        data[key] = defaultData[key] as any;
       }
     }
   }
