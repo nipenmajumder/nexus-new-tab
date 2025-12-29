@@ -26,9 +26,6 @@ export interface StorageData {
   theme: 'light' | 'dark' | 'system';
   clockSettings: ClockSettings;
   googleApps: GoogleApp[];
-  aiTools: AITool[];
-  musicServices: MusicService[];
-  defaultMusicService: 'spotify' | 'youtube';
   quoteCache: QuoteData;
   dragEnabled: boolean;
 }
@@ -63,23 +60,6 @@ export interface GoogleApp {
   order: number;
 }
 
-export interface AITool {
-  id: string;
-  name: string;
-  url: string;
-  icon: string;
-  color?: string;
-  order: number;
-}
-
-export interface MusicService {
-  name: 'spotify' | 'youtube';
-  links: Array<{
-    id: string;
-    title: string;
-    url: string;
-  }>;
-}
 
 export interface PomodoroSettings {
   workDuration: number;
@@ -100,11 +80,8 @@ export interface WidgetLayout {
   weather: { visible: boolean; order: number };
   todos: { visible: boolean; order: number };
   pomodoro: { visible: boolean; order: number };
-  notes: { visible: boolean; order: number };
   quickLinks: { visible: boolean; order: number };
   googleApps: { visible: boolean; order: number };
-  aiTools: { visible: boolean; order: number };
-  music: { visible: boolean; order: number };
   search: { visible: boolean; order: number };
   quote: { visible: boolean; order: number };
 }
@@ -187,13 +164,10 @@ const defaultData: StorageData = {
     weather: { visible: true, order: 1 },
     todos: { visible: true, order: 2 },
     pomodoro: { visible: true, order: 3 },
-    notes: { visible: true, order: 4 },
-    quickLinks: { visible: true, order: 5 },
-    googleApps: { visible: true, order: 6 },
-    aiTools: { visible: true, order: 7 },
-    music: { visible: true, order: 8 },
-    search: { visible: true, order: 9 },
-    quote: { visible: true, order: 10 },
+    quickLinks: { visible: true, order: 4 },
+    googleApps: { visible: true, order: 5 },
+    search: { visible: true, order: 6 },
+    quote: { visible: true, order: 7 },
   },
   backgroundSettings: {
     type: 'gradient',
@@ -235,35 +209,11 @@ const defaultData: StorageData = {
     { id: '7', name: 'Sheets', url: 'https://sheets.google.com', icon: 'https://ssl.gstatic.com/docs/spreadsheets/favicon3.ico', order: 6 },
     { id: '8', name: 'Meet', url: 'https://meet.google.com', icon: 'https://fonts.gstatic.com/s/i/productlogos/meet_2020q4/v6/web-48dp/logo_meet_2020q4_color_1x_web_48dp.png', order: 7 },
   ],
-  aiTools: [
-    { id: '1', name: 'ChatGPT', url: 'https://chat.openai.com', icon: 'https://chat.openai.com/favicon.ico', color: '#10a37f', order: 0 },
-    { id: '2', name: 'Claude', url: 'https://claude.ai', icon: 'https://claude.ai/favicon.ico', color: '#d97757', order: 1 },
-    { id: '3', name: 'Gemini', url: 'https://gemini.google.com', icon: 'https://www.gstatic.com/lamda/images/gemini_favicon_f069958c85030456e93de685481c559f160ea06b.png', color: '#4285f4', order: 2 },
-    { id: '4', name: 'Perplexity', url: 'https://perplexity.ai', icon: 'https://www.perplexity.ai/favicon.svg', color: '#20808d', order: 3 },
-    { id: '5', name: 'Midjourney', url: 'https://www.midjourney.com', icon: 'https://www.midjourney.com/favicon.ico', color: '#000000', order: 4 },
-    { id: '6', name: 'HuggingFace', url: 'https://huggingface.co', icon: 'https://huggingface.co/favicon.ico', color: '#ff9d00', order: 5 },
-  ],
-  musicServices: [
-    {
-      name: 'spotify',
-      links: [
-        { id: '1', title: 'Home', url: 'https://open.spotify.com' },
-        { id: '2', title: 'Search', url: 'https://open.spotify.com/search' },
-        { id: '3', title: 'Your Library', url: 'https://open.spotify.com/collection' },
-        { id: '4', title: 'Liked Songs', url: 'https://open.spotify.com/collection/tracks' },
-      ],
-    },
-    {
-      name: 'youtube',
-      links: [
-        { id: '1', title: 'Home', url: 'https://music.youtube.com' },
-        { id: '2', title: 'Explore', url: 'https://music.youtube.com/explore' },
-        { id: '3', title: 'Library', url: 'https://music.youtube.com/library' },
-        { id: '4', title: 'Liked Music', url: 'https://music.youtube.com/playlist?list=LM' },
-      ],
-    },
-  ],
-  defaultMusicService: 'spotify',
+  quoteCache: {
+    quote: '',
+    author: '',
+    fetchedAt: 0,
+  },
   dragEnabled: true,
 };
 
@@ -324,14 +274,14 @@ export async function getAllStorageData(): Promise<StorageData> {
   }
   
   // Fallback for development
-  const data: Partial<StorageData> = {};
+  const data: Record<string, unknown> = {};
   for (const key of Object.keys(defaultData) as (keyof StorageData)[]) {
     const stored = localStorage.getItem(`nexus_${key}`);
     if (stored) {
       try {
         data[key] = JSON.parse(stored);
       } catch {
-        data[key] = defaultData[key] as any;
+        data[key] = defaultData[key];
       }
     }
   }
