@@ -100,15 +100,6 @@ function DashboardContent() {
       "min-h-screen p-6 md:p-8 lg:p-12 transition-opacity duration-500",
       showContent ? "opacity-100" : "opacity-0"
     )}>
-      {/* Header */}
-      <header className="mb-8 text-center">
-        <h1 className={cn("text-2xl font-heading font-bold mb-1", textColorClass)}>
-          Nexus Tab
-        </h1>
-        <p className={cn("text-sm", mutedColorClass)}>
-          Your personalized new tab experience
-        </p>
-      </header>
 
       {/* Widget Grid - Fixed Order */}
       <main className="max-w-7xl mx-auto">
