@@ -92,9 +92,6 @@ function DashboardContent() {
     (w) => widgetLayout?.[w.key as keyof typeof widgetLayout]?.visible !== false
   );
 
-  const textColorClass = useLightText ? 'text-white' : 'text-gray-900';
-  const mutedColorClass = useLightText ? 'text-white/60' : 'text-gray-600';
-
   return (
     <div className={cn(
       "min-h-screen p-6 md:p-8 lg:p-12 transition-opacity duration-500",
@@ -115,19 +112,6 @@ function DashboardContent() {
           ))}
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className={cn("fixed bottom-6 left-6 text-xs", mutedColorClass)}>
-        <kbd className={cn(
-          "px-1.5 py-0.5 rounded mr-1",
-          useLightText ? "bg-white/20" : "bg-black/10"
-        )}>Ctrl</kbd>+
-        <kbd className={cn(
-          "px-1.5 py-0.5 rounded mx-1",
-          useLightText ? "bg-white/20" : "bg-black/10"
-        )}>K</kbd>
-        Search
-      </footer>
     </div>
   );
 }
