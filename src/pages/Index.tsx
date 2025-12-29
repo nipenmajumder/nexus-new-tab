@@ -141,6 +141,7 @@ function DashboardContent() {
   );
 }
 
+// Main Index component with SettingsProvider wrapping all children
 const Index = () => {
   return (
     <SettingsProvider>
