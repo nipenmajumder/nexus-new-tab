@@ -102,6 +102,7 @@ export interface BackgroundSettings {
 
 export interface ClockSettings {
   use24Hour: boolean;
+  clockType: 'digital' | 'analog';
 }
 
 export interface FontSettings {
@@ -123,6 +124,7 @@ export interface WeatherCache {
   [key: string]: {
     data: {
       temp: number;
+      feelsLike: number;
       description: string;
       icon: string;
       humidity: number;
@@ -182,6 +184,7 @@ const defaultData: StorageData = {
   },
   clockSettings: {
     use24Hour: true,
+    clockType: 'digital',
   },
   fontSettings: {
     headingFont: 'Space Grotesk',
